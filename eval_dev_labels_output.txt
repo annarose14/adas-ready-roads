@@ -1,0 +1,16 @@
+Labels: dev_labels.csv   Results: output/results.csv
+Images: 60  |  Your labels: fail=7, ready=28, unusable=5, degraded=11, none=9
+
+Confusion matrix (rows = YOU, columns = DETECTOR)
+                 ready  degraded      fail  no_lanes
+ready               23         4         1         0
+degraded            10         1         0         0
+fail                 6         1         0         0
+none                 5         2         2         0
+unusable             5         0         0         0
+
+Lane-lines-expected images: 46
+  Exact agreement:         24/46 = 52%
+  'Always ready' baseline: 28/46 = 61%
+  Bad roads wrongly called READY: 16/18  <- most dangerous error
+No-markings-expected images: 9 -> detector said ready=5, fail=2, degraded=2
