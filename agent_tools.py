@@ -1,6 +1,7 @@
 """ADAS-Ready Roads - agent tools.
   A. fetch_frames(): get more Mapillary images near a point (prefer same sequence),
-     analyse each with the FROZEN pipeline (adas_pipeline.py).
+     analyse each with the FROZEN pipeline (adas_pipeline.py). Returns camera heading so
+     the agent can reject frames from cross streets.
   B. road_context(): OpenStreetMap road type near a point -> should it have lane markings?
 Data credits: Mapillary images CC BY-SA 4.0 (creator saved); OSM data (c) OpenStreetMap
 contributors, ODbL."""
@@ -21,7 +22,8 @@ FETCH_DIR = Path("data_agent")
 FETCH_META = FETCH_DIR / "metadata.csv"
 OVERPASS_URL = "https://overpass-api.de/api/interpreter"
 OSM_CACHE = Path("osm_cache.json")
-HEADERS = {"User-Agent": "ADAS-Ready-Roads student project (OpenCV AI Competition 2026)"}
+OSM_RADII = (15, 40)      # try close first, then wider (GPS drift / offset centrelines)
+HEADERS = {"User-Agent": "ADAS-Ready Roads student project (OpenCV AI Competition 2026)"}
 
 # Road classes that normally carry lane markings in Australian cities
 MARKED_CLASSES = {"motorway", "motorway_link", "trunk", "trunk_link", "primary", "primary_link",
@@ -42,23 +44,25 @@ def get_auditor():
 
 # ---------------------------------------------------------------- Tool A
 def fetch_frames(lat, lon, sequence=None, exclude=(), radius_deg=0.0005, limit=10):
-    """Fetch up to `limit` new frames within ~radius of (lat, lon), analyse them.
-    Returns (frames, status). Each frame is a dict with the same fields as results.csv."""
+    """Fetch up to `limit` NEW frames within ~radius of (lat, lon), analyse them.
+    `exclude`: image ids already known (skipped). Returns (frames, status)."""
     token = os.environ.get("MAPILLARY_TOKEN")
     if not token:
-        return [], "no_token"
-    bbox = f"{lon - radius_deg},{lat - radius_deg},{lon + radius_deg},{lat + radius_deg}"
+        return [], "no_token (run: export MAPILLARY_TOKEN=...)"
+    bbox = ",".join(f"{v:.6f}" for v in (lon - radius_deg, lat - radius_deg,
+                                          lon + radius_deg, lat + radius_deg))
     try:
         resp = requests.get(MAPILLARY_URL, params={"access_token": token, "fields": FIELDS,
                                                    "bbox": bbox, "limit": 100}, timeout=60)
     except requests.RequestException as e:
         return [], f"network_error: {e}"
     if resp.status_code != 200:
-        return [], f"api_error_{resp.status_code}"
+        return [], f"api_error_{resp.status_code}: {resp.text[:300]}"
     data = resp.json().get("data", [])
+    excluded = set(exclude)
     same = [d for d in data if sequence and d.get("sequence") == sequence]
     other = [d for d in data if d not in same]
-    candidates = [d for d in same + other if d["id"] not in set(exclude)]
+    candidates = [d for d in same + other if d["id"] not in excluded]
 
     FETCH_DIR.mkdir(exist_ok=True)
     new_meta = not FETCH_META.exists()
@@ -66,7 +70,7 @@ def fetch_frames(lat, lon, sequence=None, exclude=(), radius_deg=0.0005, limit=1
     with open(FETCH_META, "a", newline="") as mf:
         mw = csv.writer(mf)
         if new_meta:
-            mw.writerow(["image_id", "lon", "lat", "captured_at", "sequence", "creator"])
+            mw.writerow(["image_id", "lon", "lat", "captured_at", "compass_angle", "sequence", "creator"])
         for d in candidates:
             if len(frames) >= limit:
                 break
@@ -92,13 +96,16 @@ def fetch_frames(lat, lon, sequence=None, exclude=(), radius_deg=0.0005, limit=1
             res = get_auditor().analyse(img) if q == "ok" else _result("unusable")
             rec = {k: ("" if v is None else str(v)) for k, v in to_record(res).items()}
             creator = (d.get("creator") or {}).get("username", "")
+            compass = d.get("compass_angle", "")
             rec.update(image_id=d["id"], lon=str(coords[0]), lat=str(coords[1]),
-                       captured_at=str(d.get("captured_at", "")), sequence=d.get("sequence", ""),
-                       creator=creator, quality=q, area="agent_fetch")
-            mw.writerow([d["id"], coords[0], coords[1], d.get("captured_at", ""),
+                       captured_at=str(d.get("captured_at", "")),
+                       compass_angle="" if compass is None else str(compass),
+                       sequence=d.get("sequence", ""), creator=creator, quality=q,
+                       area="agent_fetch")
+            mw.writerow([d["id"], coords[0], coords[1], d.get("captured_at", ""), compass,
                          d.get("sequence", ""), creator])
             frames.append(rec)
-    return frames, "ok"
+    return frames, f"ok ({len(data)} in area, {len(same)} same sequence, {len(candidates)} new)"
 
 
 # ---------------------------------------------------------------- Tool B
@@ -106,26 +113,38 @@ def _load_cache():
     return json.loads(OSM_CACHE.read_text()) if OSM_CACHE.exists() else {}
 
 
-def road_context(lat, lon, radius_m=15):
-    """OpenStreetMap ways within radius_m. Returns the most important road class and
-    whether lane markings are expected. Cached on disk."""
+def _query_osm(lat, lon, radius_m):
+    query = f'[out:json][timeout:25];way(around:{radius_m},{lat},{lon})[highway];out tags;'
+    resp = requests.post(OVERPASS_URL, data={"data": query}, headers=HEADERS, timeout=60)
+    resp.raise_for_status()
+    time.sleep(1.0)   # be polite to the public Overpass server
+    return [e.get("tags", {}) for e in resp.json().get("elements", [])]
+
+
+def road_context(lat, lon):
+    """OpenStreetMap ways near a point. Returns the most important road class and whether
+    lane markings are expected (True / False / None = unknown). Cached on disk."""
     cache = _load_cache()
     key = f"{lat:.5f},{lon:.5f}"
-    if key in cache:
+    if key in cache and cache[key].get("source") != "osm_no_road":
         return cache[key]
-    query = f'[out:json][timeout:25];way(around:{radius_m},{lat},{lon})[highway];out tags;'
+
+    roads, radius_used, n_ways = [], None, 0
     try:
-        resp = requests.post(OVERPASS_URL, data={"data": query}, headers=HEADERS, timeout=60)
-        resp.raise_for_status()
-        ways = [e.get("tags", {}) for e in resp.json().get("elements", [])]
+        for radius in OSM_RADII:
+            ways = _query_osm(lat, lon, radius)
+            n_ways = len(ways)
+            roads = [t for t in ways if t.get("highway") in CLASS_RANK]
+            if roads:
+                radius_used = radius
+                break
     except (requests.RequestException, ValueError) as e:
         return {"highway": "", "expected_marked": None, "source": f"osm_error: {e}"}
-    time.sleep(1.0)   # be polite to the public Overpass server
 
-    roads = [t for t in ways if t.get("highway") in CLASS_RANK]
     if not roads:
         ctx = {"highway": "", "name": "", "lanes": "", "lane_markings": "",
-               "expected_marked": None, "n_ways": len(ways), "source": "osm_no_road"}
+               "expected_marked": None, "radius_m": OSM_RADII[-1], "n_ways": n_ways,
+               "source": "osm_no_road"}
     else:
         best = min(roads, key=lambda t: CLASS_RANK.index(t["highway"]))
         cls = best.get("highway", "")
@@ -140,7 +159,7 @@ def road_context(lat, lon, radius_m=15):
             expected = False
         ctx = {"highway": cls, "name": best.get("name", ""), "lanes": lanes,
                "lane_markings": marking_tag, "expected_marked": expected,
-               "n_ways": len(ways), "source": "osm"}
+               "radius_m": radius_used, "n_ways": n_ways, "source": "osm"}
     cache[key] = ctx
     OSM_CACHE.write_text(json.dumps(cache, indent=1))
     return ctx

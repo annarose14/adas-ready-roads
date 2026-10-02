@@ -25,5 +25,395 @@
   "expected_marked": false,
   "n_ways": 1,
   "source": "osm"
+ },
+ "-33.91716,151.22110": {
+  "highway": "tertiary",
+  "name": "Day Avenue",
+  "lanes": "2",
+  "lane_markings": "yes",
+  "expected_marked": true,
+  "radius_m": 15,
+  "n_ways": 3,
+  "source": "osm"
+ },
+ "-33.91301,151.22465": {
+  "highway": "primary",
+  "name": "Anzac Parade",
+  "lanes": "2",
+  "lane_markings": "",
+  "expected_marked": true,
+  "radius_m": 15,
+  "n_ways": 9,
+  "source": "osm"
+ },
+ "-33.92377,151.21994": {
+  "highway": "residential",
+  "name": "Cottenham Avenue",
+  "lanes": "",
+  "lane_markings": "no",
+  "expected_marked": false,
+  "radius_m": 15,
+  "n_ways": 2,
+  "source": "osm"
+ },
+ "-33.92290,151.22005": {
+  "highway": "tertiary",
+  "name": "Cottenham Avenue",
+  "lanes": "",
+  "lane_markings": "no",
+  "expected_marked": false,
+  "radius_m": 15,
+  "n_ways": 2,
+  "source": "osm"
+ },
+ "-33.92271,151.22556": {
+  "highway": "tertiary",
+  "name": "Houston Road",
+  "lanes": "2",
+  "lane_markings": "",
+  "expected_marked": true,
+  "radius_m": 15,
+  "n_ways": 5,
+  "source": "osm"
+ },
+ "-33.91313,151.22466": {
+  "highway": "primary",
+  "name": "Anzac Parade",
+  "lanes": "2",
+  "lane_markings": "",
+  "expected_marked": true,
+  "radius_m": 15,
+  "n_ways": 12,
+  "source": "osm"
+ },
+ "-33.92238,151.22028": {
+  "highway": "tertiary",
+  "name": "Cottenham Avenue",
+  "lanes": "",
+  "lane_markings": "no",
+  "expected_marked": false,
+  "radius_m": 15,
+  "n_ways": 2,
+  "source": "osm"
+ },
+ "-33.92283,151.22022": {
+  "highway": "tertiary",
+  "name": "Cottenham Avenue",
+  "lanes": "",
+  "lane_markings": "no",
+  "expected_marked": false,
+  "radius_m": 15,
+  "n_ways": 1,
+  "source": "osm"
+ },
+ "-33.92225,151.22031": {
+  "highway": "tertiary",
+  "name": "Cottenham Avenue",
+  "lanes": "",
+  "lane_markings": "",
+  "expected_marked": true,
+  "radius_m": 15,
+  "n_ways": 4,
+  "source": "osm"
+ },
+ "-33.92341,151.22003": {
+  "highway": "residential",
+  "name": "Cottenham Avenue",
+  "lanes": "",
+  "lane_markings": "no",
+  "expected_marked": false,
+  "radius_m": 15,
+  "n_ways": 2,
+  "source": "osm"
+ },
+ "-33.91261,151.22230": {
+  "highway": "residential",
+  "name": "Grosvenor Street",
+  "lanes": "2",
+  "lane_markings": "",
+  "expected_marked": true,
+  "radius_m": 15,
+  "n_ways": 1,
+  "source": "osm"
+ },
+ "-33.92279,151.22015": {
+  "highway": "tertiary",
+  "name": "Cottenham Avenue",
+  "lanes": "",
+  "lane_markings": "no",
+  "expected_marked": false,
+  "radius_m": 15,
+  "n_ways": 2,
+  "source": "osm"
+ },
+ "-33.92249,151.22010": {
+  "highway": "tertiary",
+  "name": "Cottenham Avenue",
+  "lanes": "",
+  "lane_markings": "no",
+  "expected_marked": false,
+  "radius_m": 15,
+  "n_ways": 2,
+  "source": "osm"
+ },
+ "-33.92360,151.21991": {
+  "highway": "residential",
+  "name": "Cottenham Avenue",
+  "lanes": "",
+  "lane_markings": "no",
+  "expected_marked": false,
+  "radius_m": 15,
+  "n_ways": 2,
+  "source": "osm"
+ },
+ "-33.92272,151.22019": {
+  "highway": "tertiary",
+  "name": "Cottenham Avenue",
+  "lanes": "",
+  "lane_markings": "no",
+  "expected_marked": false,
+  "radius_m": 15,
+  "n_ways": 2,
+  "source": "osm"
+ },
+ "-33.91598,151.23418": {
+  "highway": "tertiary",
+  "name": "High Street",
+  "lanes": "2",
+  "lane_markings": "",
+  "expected_marked": true,
+  "radius_m": 15,
+  "n_ways": 7,
+  "source": "osm"
+ },
+ "-33.91314,151.22461": {
+  "highway": "primary",
+  "name": "Anzac Parade",
+  "lanes": "2",
+  "lane_markings": "",
+  "expected_marked": true,
+  "radius_m": 15,
+  "n_ways": 9,
+  "source": "osm"
+ },
+ "-33.92316,151.22006": {
+  "highway": "tertiary",
+  "name": "Borrodale Road",
+  "lanes": "",
+  "lane_markings": "",
+  "expected_marked": true,
+  "radius_m": 15,
+  "n_ways": 4,
+  "source": "osm"
+ },
+ "-33.92287,151.22017": {
+  "highway": "tertiary",
+  "name": "Cottenham Avenue",
+  "lanes": "",
+  "lane_markings": "no",
+  "expected_marked": false,
+  "radius_m": 15,
+  "n_ways": 2,
+  "source": "osm"
+ },
+ "-33.91317,151.22486": {
+  "highway": "primary",
+  "name": "Anzac Parade",
+  "lanes": "2",
+  "lane_markings": "",
+  "expected_marked": true,
+  "radius_m": 15,
+  "n_ways": 12,
+  "source": "osm"
+ },
+ "-33.92293,151.22004": {
+  "highway": "tertiary",
+  "name": "Cottenham Avenue",
+  "lanes": "",
+  "lane_markings": "no",
+  "expected_marked": false,
+  "radius_m": 15,
+  "n_ways": 2,
+  "source": "osm"
+ },
+ "-33.91305,151.22443": {
+  "highway": "primary",
+  "name": "Anzac Parade",
+  "lanes": "2",
+  "lane_markings": "",
+  "expected_marked": true,
+  "radius_m": 15,
+  "n_ways": 5,
+  "source": "osm"
+ },
+ "-33.92310,151.22016": {
+  "highway": "tertiary",
+  "name": "Borrodale Road",
+  "lanes": "",
+  "lane_markings": "",
+  "expected_marked": true,
+  "radius_m": 15,
+  "n_ways": 3,
+  "source": "osm"
+ },
+ "-33.82520,151.19961": {
+  "highway": "unclassified",
+  "name": "Clarke Street",
+  "lanes": "2",
+  "lane_markings": "",
+  "expected_marked": true,
+  "radius_m": 15,
+  "n_ways": 3,
+  "source": "osm"
+ },
+ "-33.82590,151.19519": {
+  "highway": "residential",
+  "name": "Lithgow Street",
+  "lanes": "",
+  "lane_markings": "no",
+  "expected_marked": false,
+  "radius_m": 40,
+  "n_ways": 1,
+  "source": "osm"
+ },
+ "-33.81906,151.19357": {
+  "highway": "service",
+  "name": "",
+  "lanes": "",
+  "lane_markings": "",
+  "expected_marked": false,
+  "radius_m": 15,
+  "n_ways": 2,
+  "source": "osm"
+ },
+ "-33.81902,151.19357": {
+  "highway": "service",
+  "name": "",
+  "lanes": "",
+  "lane_markings": "",
+  "expected_marked": false,
+  "radius_m": 15,
+  "n_ways": 2,
+  "source": "osm"
+ },
+ "-33.82135,151.19391": {
+  "highway": "service",
+  "name": "",
+  "lanes": "",
+  "lane_markings": "",
+  "expected_marked": false,
+  "radius_m": 15,
+  "n_ways": 1,
+  "source": "osm"
+ },
+ "-33.82123,151.19468": {
+  "highway": "service",
+  "name": "Evans Lane",
+  "lanes": "",
+  "lane_markings": "",
+  "expected_marked": false,
+  "radius_m": 15,
+  "n_ways": 2,
+  "source": "osm"
+ },
+ "-33.82140,151.19400": {
+  "highway": "service",
+  "name": "",
+  "lanes": "",
+  "lane_markings": "",
+  "expected_marked": false,
+  "radius_m": 15,
+  "n_ways": 1,
+  "source": "osm"
+ },
+ "-33.88723,151.15752": {
+  "highway": "secondary",
+  "name": "Norton Street",
+  "lanes": "2",
+  "lane_markings": "",
+  "expected_marked": true,
+  "radius_m": 15,
+  "n_ways": 7,
+  "source": "osm"
+ },
+ "-33.88036,151.15090": {
+  "highway": "residential",
+  "name": "Edith Street",
+  "lanes": "",
+  "lane_markings": "no",
+  "expected_marked": false,
+  "radius_m": 15,
+  "n_ways": 6,
+  "source": "osm"
+ },
+ "-33.88073,151.15203": {
+  "highway": "residential",
+  "name": "Elswick Street",
+  "lanes": "2",
+  "lane_markings": "",
+  "expected_marked": true,
+  "radius_m": 15,
+  "n_ways": 3,
+  "source": "osm"
+ },
+ "-33.91747,151.16770": {
+  "highway": "primary",
+  "name": "Railway Road",
+  "lanes": "4",
+  "lane_markings": "",
+  "expected_marked": true,
+  "radius_m": 15,
+  "n_ways": 3,
+  "source": "osm"
+ },
+ "-33.91751,151.16758": {
+  "highway": "primary",
+  "name": "Railway Road",
+  "lanes": "4",
+  "lane_markings": "",
+  "expected_marked": true,
+  "radius_m": 15,
+  "n_ways": 3,
+  "source": "osm"
+ },
+ "-33.91763,151.16771": {
+  "highway": "primary",
+  "name": "Railway Road",
+  "lanes": "4",
+  "lane_markings": "",
+  "expected_marked": true,
+  "radius_m": 15,
+  "n_ways": 10,
+  "source": "osm"
+ },
+ "-33.91741,151.16759": {
+  "highway": "primary",
+  "name": "Railway Road",
+  "lanes": "4",
+  "lane_markings": "",
+  "expected_marked": true,
+  "radius_m": 15,
+  "n_ways": 3,
+  "source": "osm"
+ },
+ "-33.91751,151.16767": {
+  "highway": "primary",
+  "name": "Railway Road",
+  "lanes": "4",
+  "lane_markings": "",
+  "expected_marked": true,
+  "radius_m": 15,
+  "n_ways": 4,
+  "source": "osm"
+ },
+ "-33.91747,151.16755": {
+  "highway": "primary",
+  "name": "Railway Road",
+  "lanes": "4",
+  "lane_markings": "",
+  "expected_marked": true,
+  "radius_m": 15,
+  "n_ways": 3,
+  "source": "osm"
  }
 }
