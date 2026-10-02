@@ -3,7 +3,13 @@ data/
 output/
 output_v1/
 output_v2/
+output_v3a/
+output_v3b/
+output_v3c/
+output_final/
 review/
+seg_test/
+models/
 __pycache__/
 .DS_Store
 *.env
