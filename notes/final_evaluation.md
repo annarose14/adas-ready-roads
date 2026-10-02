@@ -17,3 +17,22 @@
 
 ## TEST results
 (see eval_test_labels_output_final.txt - run once, not tuned on)
+
+## TEST results (run once, 2 Oct)
+- Bad roads wrongly called READY: 7/17 (dev: 2/18)
+- Among detector-graded: bad caught 2/9 (dev 10/12), false alarms 7/21 (dev 6/20),
+  agreement 15/30 = 50% (dev 69%)
+- "fail" roads: 5/5 went to no_lanes (2) or review (3) - none called ready
+- Sent to review: 6/60; good roads skipped: 8/29; none-scenes correctly skipped 6/13
+
+## Interpretation
+Single-image ready/degraded thresholds OVERFIT the 60-image dev set
+(~8 tuning iterations, only 12 bad dev examples). Segmentation, ego-vehicle cut,
+road gate and review routing generalised; per-image contrast grading did not.
+This test set is now USED: no further changes judged against it.
+
+## Response (design change, not threshold tweaking)
+- Move from per-image to per-road-segment verdicts (consensus over neighbouring
+  frames in the same Mapillary sequence) - the agent loop.
+- Treat persistent no_lanes on a road expected to be marked as a fail signal.
+- Final evaluation on a FRESH test set from new, unseen suburbs.
