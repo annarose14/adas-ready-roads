@@ -29,3 +29,8 @@ Full overlap; no threshold separates them (e.g. 0.15 loses 6/46 roads, keeps 7/9
 Causes: camera colour casts, shade, vehicles covering ROI. Two "none" images are
 unmarked roads (laneway) - correct verdict is no_lanes, not not_road.
 Gate disabled. Plan: OpenCV 5 DNN semantic segmentation (road/vehicle/sky/vegetation).
+
+## Stability note (2 Oct)
+lane_check_v3b.py crashed once with "segmentation fault" (inside OpenCV DNN, C++ level),
+then ran fine on re-run with identical code/data -> intermittent, likely threading in
+OpenCV 5 new DNN engine. TODO before AWS: test ENGINE_CLASSIC or cv.setNumThreads(1).

@@ -6,7 +6,7 @@ from pathlib import Path
 
 labels_file, results_file = sys.argv[1], sys.argv[2]
 LEVELS = ["ready", "degraded", "fail"]
-COLS = ["ready", "degraded", "fail", "no_lanes", "not_road"]
+COLS = ["ready", "degraded", "fail", "no_lanes", "not_road", "review"]
 
 preds = {r["image_id"]: r["status"] for r in csv.DictReader(open(results_file))}
 pairs = [(r["my_label"], preds.get(r["image_id"], "missing"))
@@ -40,8 +40,16 @@ if graded:
     if bad:
         missed = sum(p == "ready" for _, p in bad)
         out(f"  Bad roads wrongly called READY: {missed}/{len(bad)}  <- most dangerous error")
+    n_ready = sum(h == "ready" for h, _ in graded)
     good_lost = sum(h == "ready" and p in ("no_lanes", "not_road") for h, p in graded)
-    out(f"  Good roads wrongly skipped (no_lanes/not_road): {good_lost}/{sum(h == 'ready' for h, _ in graded)}")
+    out(f"  Good roads wrongly skipped (no_lanes/not_road): {good_lost}/{n_ready}")
+    decided = [(h, p) for h, p in graded if p in LEVELS]
+    if decided:
+        d_exact = sum(h == p for h, p in decided)
+        out(f"  Agreement when detector gave a grade: {d_exact}/{len(decided)} = {100*d_exact/len(decided):.0f}%")
+
+review = sum(p == "review" for _, p in pairs)
+out(f"Sent to review (human/agent check): {review}/{len(pairs)}")
 
 none_preds = [p for h, p in pairs if h == "none"]
 if none_preds:
