@@ -22,3 +22,10 @@ predictions, to avoid biasing evaluation.
 ## Plan (ablation)
 - v3a: road-presence gate, bonnet cut, sky/foliage masking, kerb-line rejection
 - v3b: OpenCV 5 DNN vehicle detection, mask vehicles before paint detection
+
+## v3a result: colour road gate REJECTED (2 Oct)
+tune_road.py on DEV: road_frac of real roads ranges 0.00-0.98, non-roads 0.10-1.00.
+Full overlap; no threshold separates them (e.g. 0.15 loses 6/46 roads, keeps 7/9 non-roads).
+Causes: camera colour casts, shade, vehicles covering ROI. Two "none" images are
+unmarked roads (laneway) - correct verdict is no_lanes, not not_road.
+Gate disabled. Plan: OpenCV 5 DNN semantic segmentation (road/vehicle/sky/vegetation).

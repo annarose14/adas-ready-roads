@@ -1,9 +1,11 @@
 """ADAS-Ready Roads - v3a lane-marking visibility checker (OpenCV 5).
 Changes from v2 (from failure analysis):
-  - road-presence gate -> 'not_road' verdict (foliage, grass, dirt)
   - ROI bottom cut to remove bonnet/dashboard reflections
   - ROI top lowered + sky and vegetation masked out of paint detection
-  - lane lines must sit in plausible lane positions (rejects kerbs at edges)"""
+  - lane lines must sit in plausible lane positions (rejects kerbs at edges)
+Colour-based road gate was tested and REJECTED (road/non-road road_frac
+distributions overlap fully on DEV). Gate disabled (ROAD_MIN_FRAC = 0.0);
+road_frac still recorded for analysis. Replaced by DNN segmentation in v3b."""
 import csv
 from pathlib import Path
 
@@ -16,7 +18,7 @@ WIDTH = 1280
 ROI_TOP = 0.62          # road region starts this far down the image
 ROI_BOTTOM = 0.90       # cut off bottom 10% (bonnet / dashboard)
 TOPHAT_THRESH = 35      # how much brighter than surroundings paint must be
-ROAD_MIN_FRAC = 0.50    # min fraction of ROI that looks like grey road surface
+ROAD_MIN_FRAC = 0.0     # gate disabled - see docstring
 READY_T = 70            # paint contrast >= this -> ready   (tuned on DEV)
 FAIL_T = 60             # paint contrast <  this -> fail    (tuned on DEV)
 
