@@ -3,6 +3,7 @@ data/
 output/
 output_v1/
 output_v2/
+review/
 __pycache__/
 .DS_Store
 *.env

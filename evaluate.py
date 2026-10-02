@@ -6,7 +6,7 @@ from pathlib import Path
 
 labels_file, results_file = sys.argv[1], sys.argv[2]
 LEVELS = ["ready", "degraded", "fail"]
-COLS = ["ready", "degraded", "fail", "no_lanes"]
+COLS = ["ready", "degraded", "fail", "no_lanes", "not_road"]
 
 preds = {r["image_id"]: r["status"] for r in csv.DictReader(open(results_file))}
 pairs = [(r["my_label"], preds.get(r["image_id"], "missing"))
@@ -40,10 +40,13 @@ if graded:
     if bad:
         missed = sum(p == "ready" for _, p in bad)
         out(f"  Bad roads wrongly called READY: {missed}/{len(bad)}  <- most dangerous error")
+    good_lost = sum(h == "ready" and p in ("no_lanes", "not_road") for h, p in graded)
+    out(f"  Good roads wrongly skipped (no_lanes/not_road): {good_lost}/{sum(h == 'ready' for h, _ in graded)}")
 
 none_preds = [p for h, p in pairs if h == "none"]
 if none_preds:
-    out(f"No-markings-expected images: {len(none_preds)} -> detector said " +
+    correct = sum(p in ("no_lanes", "not_road") for p in none_preds)
+    out(f"No-markings-expected images: {len(none_preds)} -> correctly skipped {correct}, detector said " +
         ", ".join(f"{k}={v}" for k, v in Counter(none_preds).items()))
 
 name = f"eval_{Path(labels_file).stem}_{Path(results_file).parent.name}.txt"
