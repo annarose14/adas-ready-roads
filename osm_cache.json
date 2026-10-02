@@ -1,0 +1,29 @@
+{
+ "-33.91347,151.22469": {
+  "highway": "tertiary",
+  "name": "Doncaster Avenue",
+  "lanes": "",
+  "lane_markings": "no",
+  "expected_marked": false,
+  "n_ways": 9,
+  "source": "osm"
+ },
+ "-33.91334,151.22468": {
+  "highway": "primary",
+  "name": "Anzac Parade",
+  "lanes": "2",
+  "lane_markings": "",
+  "expected_marked": true,
+  "n_ways": 9,
+  "source": "osm"
+ },
+ "-33.92281,151.22022": {
+  "highway": "tertiary",
+  "name": "Cottenham Avenue",
+  "lanes": "",
+  "lane_markings": "no",
+  "expected_marked": false,
+  "n_ways": 1,
+  "source": "osm"
+ }
+}

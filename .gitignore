@@ -1,5 +1,6 @@
 .venv/
 data/
+data_agent/
 output/
 output_v1/
 output_v2/
