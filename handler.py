@@ -2,7 +2,9 @@
 POST JSON with ONE of:
   {"image_base64": "<base64 JPEG/PNG>"}     analyse an uploaded road photo
   {"mapillary_id": "1234567890"}            analyse a Mapillary image by id
-Returns the frozen OpenCV 5 pipeline verdict as JSON."""
+Returns the frozen OpenCV 5 pipeline verdict as JSON.
+CORS headers are added by the Lambda Function URL configuration (not here),
+to avoid duplicate Access-Control-Allow-Origin headers that browsers reject."""
 import base64
 import json
 import os
@@ -21,8 +23,7 @@ AUDITOR = RoadAuditor(MODEL_PATH)          # loaded once per container (engine f
 
 def _response(code, payload):
     return {"statusCode": code,
-            "headers": {"Content-Type": "application/json",
-                        "Access-Control-Allow-Origin": "*"},
+            "headers": {"Content-Type": "application/json"},
             "body": json.dumps(payload)}
 
 
@@ -36,7 +37,8 @@ def _mapillary_image(image_id):
                         params={"access_token": token,
                                 "fields": "thumb_2048_url,computed_geometry,creator"},
                         timeout=20)
-    meta.raise_for_status()
+    if meta.status_code != 200:
+        raise ValueError(f"Mapillary image {image_id} not found or not accessible")
     info = meta.json()
     img = requests.get(info["thumb_2048_url"], timeout=30)
     img.raise_for_status()
@@ -81,6 +83,9 @@ def handler(event, context):
         print(json.dumps({"event": "analysed", "status": out["status"],
                           "source": source.get("type"), "latency_ms": out["latency_ms"]}))
         return _response(200, out)
+    except ValueError as e:
+        print(json.dumps({"event": "bad_request", "error": str(e)}))
+        return _response(400, {"error": str(e)})
     except Exception as e:
         print(json.dumps({"event": "error", "error": str(e)}))
-        return _response(500, {"error": str(e)})
+        return _response(500, {"error": "internal error"})

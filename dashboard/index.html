@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ADAS-Ready Roads</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+  :root { --ink:#1d2433; --muted:#5b6475; --line:#e3e6ec; --bg:#f6f7f9; --card:#fff; --accent:#2457d6; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color:var(--ink); background:var(--bg); }
+  header { padding:16px 20px; background:var(--card); border-bottom:1px solid var(--line); }
+  header h1 { margin:0; font-size:1.35rem; }
+  header p { margin:4px 0 0; color:var(--muted); font-size:.95rem; }
+  main { display:grid; grid-template-columns: 2fr 1fr; gap:16px; padding:16px; height: calc(100vh - 140px); min-height:560px; }
+  #map { border-radius:12px; border:1px solid var(--line); height:100%; }
+  aside { overflow-y:auto; display:flex; flex-direction:column; gap:12px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px; }
+  .card h2 { font-size:1rem; margin:0 0 8px; }
+  .legend { display:grid; grid-template-columns: 1fr auto; gap:4px 8px; font-size:.9rem; }
+  .sw { display:inline-block; width:12px; height:12px; border-radius:3px; margin-right:6px; vertical-align:-1px; }
+  .prio { list-style:none; margin:0; padding:0; font-size:.9rem; }
+  .prio li { padding:6px 0; border-bottom:1px solid var(--line); }
+  .prio button { all:unset; cursor:pointer; color:var(--accent); }
+  .prio button:focus-visible, .btn:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+  dl { display:grid; grid-template-columns: auto 1fr; gap:4px 10px; margin:0; font-size:.9rem; }
+  dt { color:var(--muted); }
+  dd { margin:0; }
+  .badge { display:inline-block; padding:2px 8px; border-radius:999px; color:#fff; font-size:.8rem; font-weight:600; }
+  label { font-size:.9rem; display:block; margin:6px 0 4px; }
+  input[type=text] { width:100%; padding:8px; border:1px solid var(--line); border-radius:8px; font-size:.95rem; }
+  .btn { margin-top:8px; padding:8px 12px; border:0; border-radius:8px; background:var(--accent); color:#fff; font-weight:600; cursor:pointer; }
+  .btn[disabled] { opacity:.6; cursor:wait; }
+  #result { margin-top:10px; font-size:.9rem; }
+  details pre { white-space:pre-wrap; font-size:.75rem; background:var(--bg); padding:8px; border-radius:8px; }
+  .muted { color:var(--muted); font-size:.85rem; }
+  footer { padding:8px 20px 16px; color:var(--muted); font-size:.8rem; }
+  @media (max-width: 900px) { main { grid-template-columns: 1fr; height:auto; } #map { height:420px; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>ADAS-Ready Roads</h1>
+  <p>Can a camera-based lane-keeping system see the lane lines on Sydney's roads? Screening from crowd-sourced street imagery with OpenCV 5, an evidence-gathering agent, and OpenStreetMap context.</p>
+</header>
+
+<main>
+  <div id="map" role="region" aria-label="Map of assessed road segments"></div>
+  <aside>
+    <section class="card" aria-labelledby="sum-h">
+      <h2 id="sum-h">Road segments</h2>
+      <div id="legend" class="legend"></div>
+    </section>
+
+    <section class="card" aria-labelledby="prio-h">
+      <h2 id="prio-h">Inspection priority</h2>
+      <ul id="priority" class="prio"></ul>
+    </section>
+
+    <section class="card" aria-labelledby="det-h" aria-live="polite">
+      <h2 id="det-h">Segment details</h2>
+      <div id="details" class="muted">Select a segment on the map or in the priority list.</div>
+    </section>
+
+    <section class="card" aria-labelledby="try-h">
+      <h2 id="try-h">Try it live (AWS)</h2>
+      <p class="muted">Runs the OpenCV 5 pipeline on AWS Lambda for a single photo. The first request can take ~15 s while the server starts.</p>
+      <label for="mly">Mapillary image ID</label>
+      <input id="mly" type="text" inputmode="numeric" placeholder="e.g. 1043027243798906">
+      <button id="go-mly" class="btn">Analyse Mapillary image</button>
+      <label for="file">…or upload a forward-facing road photo</label>
+      <input id="file" type="file" accept="image/*">
+      <button id="go-file" class="btn">Analyse photo</button>
+      <div id="result" aria-live="polite"></div>
+    </section>
+  </aside>
+</main>
+
+<footer>
+  Street imagery: <a href="https://www.mapillary.com">Mapillary</a> contributors (CC BY-SA 4.0). Road data and map tiles: © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a> (ODbL).
+  Segmentation model: fastseg MobileV3Large (MIT). This is a screening tool to prioritise human inspection, not a safety certification.
+</footer>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="config.js"></script>
+<script>
+const COLORS = { adas_readable:"#1a9850", at_risk:"#e08e0b", not_readable:"#d73027",
+                 human_review:"#7b3294", unmarked_by_design:"#8c8c8c" };
+const LABELS = { adas_readable:"ADAS-readable", at_risk:"At risk", not_readable:"Not readable",
+                 human_review:"Needs human review", unmarked_by_design:"Unmarked by design" };
+const FRAME_COLORS = { ready:"#1a9850", degraded:"#e08e0b", fail:"#d73027", no_lanes:"#555",
+                       not_road:"#8c8c8c", review:"#7b3294", unusable:"#8c8c8c" };
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const badge = (txt, color) => `<span class="badge" style="background:${color}">${esc(txt)}</span>`;
+
+const map = L.map("map");
+L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+  maxZoom: 19 }).addTo(map);
+map.setView([-33.89, 151.19], 12);
+
+const layersById = {};
+
+function showSegment(p) {
+  const frames = (p.frame_ids || "").split(";").filter(Boolean);
+  const links = frames.slice(0, 8).map(id =>
+    `<a href="https://www.mapillary.com/app/?pKey=${esc(id)}" target="_blank" rel="noopener">${esc(id)}</a>`).join(", ");
+  document.getElementById("details").innerHTML = `
+    <p>${badge(LABELS[p.final_verdict] || p.final_verdict, COLORS[p.final_verdict] || "#333")}
+       ${p.priority === "high" ? badge("HIGH priority", "#b2182b") : ""}</p>
+    <dl>
+      <dt>Road</dt><dd>${esc(p.road_name || "unknown")} ${p.highway ? "(" + esc(p.highway) + ")" : ""}</dd>
+      <dt>Reason</dt><dd>${esc(p.reason)}</dd>
+      <dt>Lane lines found</dt><dd>${esc(p.n_lines_found)} of ${esc(p.n_road_frames)} road frames (${Math.round((p.detect_rate || 0) * 100)}%)</dd>
+      <dt>Median contrast</dt><dd>${esc(p.median_contrast)}</dd>
+      <dt>Agent fetches</dt><dd>${esc(p.fetch_rounds)} extra evidence round(s)</dd>
+      <dt>Initial → final</dt><dd>${esc(p.initial_verdict)} → ${esc(p.final_verdict)}</dd>
+      <dt>Segment</dt><dd>${esc(p.segment_id)} · ${esc(p.length_m)} m</dd>
+      <dt>Photos</dt><dd>${links || "–"}${frames.length > 8 ? " …" : ""}</dd>
+    </dl>`;
+}
+
+function focusSegment(id) {
+  const layer = layersById[id];
+  if (!layer) return;
+  if (layer.getBounds) map.fitBounds(layer.getBounds(), { maxZoom: 18, padding: [40, 40] });
+  else map.setView(layer.getLatLng(), 18);
+  layer.fire("click");
+}
+
+fetch("segments_agent.geojson").then(r => r.json()).then(data => {
+  const layer = L.geoJSON(data, {
+    style: f => ({ color: COLORS[f.properties.final_verdict] || "#333", weight: 7, opacity: 0.9 }),
+    pointToLayer: (f, ll) => L.circleMarker(ll, { radius: 8, weight: 2,
+      color: COLORS[f.properties.final_verdict] || "#333",
+      fillColor: COLORS[f.properties.final_verdict] || "#333", fillOpacity: 0.85 }),
+    onEachFeature: (f, l) => {
+      layersById[f.properties.segment_id] = l;
+      l.bindTooltip(`${LABELS[f.properties.final_verdict] || ""}${f.properties.road_name ? " · " + f.properties.road_name : ""}`);
+      l.on("click", () => showSegment(f.properties));
+    }
+  }).addTo(map);
+  map.fitBounds(layer.getBounds(), { padding: [20, 20] });
+
+  const counts = {};
+  data.features.forEach(f => counts[f.properties.final_verdict] = (counts[f.properties.final_verdict] || 0) + 1);
+  document.getElementById("legend").innerHTML = Object.keys(LABELS).map(k =>
+    `<span><span class="sw" style="background:${COLORS[k]}"></span>${LABELS[k]}</span><span>${counts[k] || 0}</span>`).join("");
+
+  const rank = { high: 0, review: 1 };
+  const prio = data.features.map(f => f.properties).filter(p => p.priority in rank)
+    .sort((a, b) => rank[a.priority] - rank[b.priority]);
+  document.getElementById("priority").innerHTML = prio.length ? prio.slice(0, 15).map(p =>
+    `<li><button data-id="${esc(p.segment_id)}">${p.priority === "high" ? "🔴" : "🟣"} ${esc(p.road_name || p.segment_id)}</button>
+     <div class="muted">${esc(p.reason)}</div></li>`).join("") : "<li class='muted'>None</li>";
+  document.querySelectorAll("#priority button").forEach(b => b.addEventListener("click", () => focusSegment(b.dataset.id)));
+}).catch(() => {
+  document.getElementById("legend").textContent = "Could not load segments_agent.geojson";
+});
+
+// ---------- Try it live ----------
+const resultEl = document.getElementById("result");
+function renderResult(j) {
+  if (j.error) { resultEl.innerHTML = `<p>Error: ${esc(j.error)}</p>`; return; }
+  const src = j.source || {};
+  const credit = src.type === "mapillary"
+    ? `<dt>Photo</dt><dd><a href="https://www.mapillary.com/app/?pKey=${esc(src.id)}" target="_blank" rel="noopener">${esc(src.id)}</a> by ${esc(src.creator)} (${esc(src.licence)})</dd>` : "";
+  resultEl.innerHTML = `
+    <p>${badge(j.status, FRAME_COLORS[j.status] || "#333")} ${j.reason ? esc(j.reason) : ""}</p>
+    <dl>
+      <dt>Paint contrast</dt><dd>${esc(j.paint_contrast || "–")}</dd>
+      <dt>Lane lines</dt><dd>${esc(j.lane_sides)} side(s) found</dd>
+      <dt>Road in view</dt><dd>${j.drivable_frac !== "" ? Math.round(j.drivable_frac * 100) + "%" : "–"}</dd>
+      ${credit}
+      <dt>Engine</dt><dd>OpenCV ${esc(j.opencv_version)} (${esc(j.dnn_engine)}) · ${esc(j.latency_ms)} ms</dd>
+    </dl>
+    <details><summary>Raw response</summary><pre>${esc(JSON.stringify(j, null, 2))}</pre></details>`;
+  if (src.lat && src.lon) {
+    L.circleMarker([src.lat, src.lon], { radius: 9, color: "#000", weight: 2,
+      fillColor: FRAME_COLORS[j.status] || "#333", fillOpacity: 1 }).addTo(map)
+      .bindTooltip("Your analysed photo: " + j.status).openTooltip();
+    map.setView([src.lat, src.lon], 17);
+  }
+}
+
+async function analyse(payload, btn) {
+  if (!window.ADAS_API_URL) { resultEl.textContent = "API URL not configured (config.js)."; return; }
+  btn.disabled = true;
+  resultEl.innerHTML = "<p class='muted'>Analysing on AWS… (first request may take ~15 s)</p>";
+  try {
+    const r = await fetch(window.ADAS_API_URL, { method: "POST",
+      headers: { "content-type": "application/json" }, body: JSON.stringify(payload) });
+    renderResult(await r.json());
+  } catch (e) {
+    resultEl.innerHTML = `<p>Request failed: ${esc(e.message)}</p>`;
+  } finally { btn.disabled = false; }
+}
+
+function fileToBase64(file, maxW = 1600) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      const s = Math.min(1, maxW / img.width);
+      const c = document.createElement("canvas");
+      c.width = Math.round(img.width * s); c.height = Math.round(img.height * s);
+      c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(img.src);
+      resolve(c.toDataURL("image/jpeg", 0.9).split(",")[1]);
+    };
+    img.onerror = reject;
+    img.src = URL.createObjectURL(file);
+  });
+}
+
+document.getElementById("go-mly").addEventListener("click", e => {
+  const id = document.getElementById("mly").value.trim();
+  if (!/^\d+$/.test(id)) { resultEl.textContent = "Please enter a numeric Mapillary image ID."; return; }
+  analyse({ mapillary_id: id }, e.currentTarget);
+});
+document.getElementById("go-file").addEventListener("click", async e => {
+  const f = document.getElementById("file").files[0];
+  if (!f) { resultEl.textContent = "Please choose a photo first."; return; }
+  const btn = e.currentTarget;
+  analyse({ image_base64: await fileToBase64(f) }, btn);
+});
+</script>
+</body>
+</html>
