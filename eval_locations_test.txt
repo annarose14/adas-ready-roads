@@ -1,0 +1,17 @@
+Location-level TEST evaluation  (36 locations, fresh suburbs, blind labels)
+Human labels: readable=15, unmarked=11, at_risk=10
+System:       review=12, unmarked=3, readable=11, at_risk=9, not_readable=1
+
+Confusion matrix (rows = HUMAN, columns = SYSTEM)
+                   readable      at_risk not_readable     unmarked       review
+readable                  5            6            1            0            3
+at_risk                   4            2            0            0            4
+unmarked                  2            1            0            3            5
+
+Coverage: system decided 24/36 locations (67%), sent 12 to human review
+Agreement on decided + human-judgeable: 10/24 = 42%   (baseline 'always readable': 12/24 = 50%)
+Problem roads (human at_risk/not_readable) that the system decided on: 6
+  caught as at_risk/not_readable: 2   DANGEROUS (called readable): 4
+Readable roads (human): 12   false alarms (flagged at_risk/not_readable): 7
+Unmarked-by-design roads (human): 11   system agreed: 3
+Sent to review -> human said: readable=3, unmarked=5, at_risk=4

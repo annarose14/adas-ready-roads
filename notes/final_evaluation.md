@@ -63,3 +63,13 @@ compare_engines.py: classic vs new engine verdicts agree on 318/320 usable image
 Conclusion: HIGH flags mostly false alarms from complex urban scenes. Fixes planned:
 (1) vehicle-speed filter on sequences, (2) OSM junction detection -> review,
 (3) spatial merging of duplicate segments. Remaining: tram tracks, roadworks, glare = limitations.
+
+## Location-level TEST (fresh suburbs Burwood + Bondi Junction, 4 Oct, blind labels)
+36 locations. System decided 24 (67%), 12 to review (human could judge all 12).
+Agreement on decided: 10/24 = 42% (baseline always-readable 50%).
+Problem roads decided: 6 -> caught 2, DANGEROUS (called readable) 4.
+Readable roads: 12 -> false alarms 7. Unmarked: 11 -> system agreed 3.
+Interpretation: safeguards (junction review, merging, vehicle filter) generalise; the
+hand-built frame-level lane finder does NOT generalise to unseen suburbs.
+Caveats: small n; labels made late at night (labels NOT changed after seeing results).
+This TEST set is now USED.
