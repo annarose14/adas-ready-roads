@@ -2,8 +2,10 @@
 Loop per road segment: PERCEIVE (frozen OpenCV 5 pipeline results) -> CONTEXT (OpenStreetMap)
 -> ACT (fetch more Mapillary frames when evidence is thin; reject cross-street frames by
 heading; skip known images) -> RE-PERCEIVE -> DECIDE -> PRIORITISE / ESCALATE to human review.
-Every step is logged to agent_trace.jsonl so decisions are auditable.
-Outputs: segments_agent.csv, segments_agent.geojson, review_queue.csv, agent_trace.jsonl"""
+Every step is logged to agent_trace.jsonl so decisions are auditable; every frame used is
+saved to agent_frames.csv (with photographer credit) for review and the dashboard.
+Outputs: segments_agent.csv, segments_agent.geojson, review_queue.csv, agent_trace.jsonl,
+agent_frames.csv"""
 import csv
 import json
 import math
@@ -24,6 +26,9 @@ OUT_CSV = Path("segments_agent.csv")
 OUT_GEO = Path("segments_agent.geojson")
 OUT_QUEUE = Path("review_queue.csv")
 OUT_TRACE = Path("agent_trace.jsonl")
+OUT_FRAMES = Path("agent_frames.csv")
+FRAME_COLS = ["segment_id", "image_id", "origin", "status", "reason", "paint_contrast",
+              "lane_sides", "lat", "lon", "compass_angle", "captured_at", "sequence", "creator"]
 
 
 def prep(f):
@@ -57,6 +62,8 @@ def run_segment(seg_id, seq, frames, known_ids, budget):
     def log(step, **kw):
         trace.append({"step": step, **kw})
 
+    for f in frames:
+        f.setdefault("_origin", "original")
     s = seglib.summarise(seg_id, seq, frames)
     coords = s["_coords"]
     log("perceive", n_frames=s["n_frames"], n_road_frames=s["n_road_frames"],
@@ -78,6 +85,8 @@ def run_segment(seg_id, seq, frames, known_ids, budget):
                                    radius_deg=FETCH_RADII[rounds], limit=FETCH_LIMIT)
         known_ids.update(f["image_id"] for f in new)
         kept = [prep(f) for f in new if aligned(f, heading, seq)]
+        for f in kept:
+            f["_origin"] = "fetched"
         before = (s["verdict"], s["n_road_frames"], s["detect_rate"])
         frames = frames + kept
         s = seglib.summarise(seg_id, seq, frames)
@@ -121,8 +130,16 @@ def run_segment(seg_id, seq, frames, known_ids, budget):
 
     s.update(initial_verdict=trace[0]["verdict"], final_verdict=final, reason=reason,
              priority=priority, highway=hw, road_name=ctx.get("name", ""),
-             expected_marked=expected, fetch_rounds=rounds, _coords=coords)
-    return s, trace
+             expected_marked=expected, osm_source=ctx.get("source", ""),
+             fetch_rounds=rounds, _coords=coords)
+    frame_rows = [{"segment_id": seg_id, "image_id": f.get("image_id", ""),
+                   "origin": f.get("_origin", "original"), "status": f.get("status", ""),
+                   "reason": f.get("reason", ""), "paint_contrast": f.get("paint_contrast", ""),
+                   "lane_sides": f.get("lane_sides", ""), "lat": f.get("lat", ""),
+                   "lon": f.get("lon", ""), "compass_angle": f.get("compass_angle", ""),
+                   "captured_at": f.get("captured_at", ""), "sequence": f.get("sequence", ""),
+                   "creator": f.get("creator", "")} for f in frames]
+    return s, trace, frame_rows
 
 
 def main():
@@ -130,12 +147,13 @@ def main():
     known_ids = {r["image_id"] for r in csv.DictReader(open(seglib.RESULTS))}
     raw = seglib.build_segments(frames)
     budget = {"left": MAX_FETCH_CALLS}
-    results, traces = [], []
+    results, traces, all_frames = [], [], []
     for i, (seq, fs) in enumerate(raw, 1):
         seg_id = f"S{i:04d}"
-        s, trace = run_segment(seg_id, seq, fs, known_ids, budget)
+        s, trace, frame_rows = run_segment(seg_id, seq, fs, known_ids, budget)
         results.append(s)
         traces.append({"segment_id": seg_id, "trace": trace})
+        all_frames += frame_rows
         if i % 10 == 0:
             print(f"  ...{i}/{len(raw)} segments (fetch budget left: {budget['left']})")
 
@@ -149,6 +167,10 @@ def main():
                                           "priority", "reason", "frame_ids"], extrasaction="ignore")
         w.writeheader()
         w.writerows([s for s in results if s["priority"] in ("high", "review")])
+    with open(OUT_FRAMES, "w", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=FRAME_COLS)
+        w.writeheader()
+        w.writerows(all_frames)
     with open(OUT_TRACE, "w") as f:
         for t in traces:
             f.write(json.dumps(t) + "\n")
@@ -160,30 +182,20 @@ def main():
                          "properties": {k: v for k, v in s.items() if not k.startswith("_")}})
     OUT_GEO.write_text(json.dumps({"type": "FeatureCollection", "features": features}))
 
-    print(f"\nSegments: {len(results)}   Fetch calls used: {MAX_FETCH_CALLS - budget['left']}")
+    osm_errors = sum(str(s["osm_source"]).startswith("osm_error") for s in results)
+    print(f"\nSegments: {len(results)}   Fetch calls used: {MAX_FETCH_CALLS - budget['left']}   "
+          f"OSM lookups failed: {osm_errors}   Frames saved: {len(all_frames)} "
+          f"({sum(f['origin'] == 'fetched' for f in all_frames)} fetched)")
     print("\nFinal verdicts:")
     for v, n in Counter(s["final_verdict"] for s in results).most_common():
         print(f"  {v:20s} {n}")
     print("\nPriority:")
     for p, n in Counter(s["priority"] for s in results).most_common():
         print(f"  {p:8s} {n}")
-    print("\nInitial -> final (how the agent changed decisions):")
-    for (a, b), n in Counter((s["initial_verdict"], s["final_verdict"]) for s in results).most_common():
-        print(f"  {a:22s} -> {b:20s} {n}")
-
-    print("\nExample traces:")
-    shown = set()
-    for want in ["act_fetch", "skip_fetch", "high"]:
-        for t, s in zip(traces, results):
-            steps = [x["step"] for x in t["trace"]]
-            hit = (want in steps) or (want == "high" and s["priority"] == "high")
-            if hit and t["segment_id"] not in shown:
-                shown.add(t["segment_id"])
-                print(f"\n  {t['segment_id']} ({s['road_name'] or '?'}):")
-                for step in t["trace"]:
-                    print("    " + json.dumps(step))
-                break
-    print(f"\nWrote {OUT_CSV}, {OUT_GEO}, {OUT_QUEUE}, {OUT_TRACE}")
+    print("\nHuman-review reasons:")
+    for r, n in Counter(s["reason"] for s in results if s["final_verdict"] == "human_review").most_common():
+        print(f"  {n:3d}  {r}")
+    print(f"\nWrote {OUT_CSV}, {OUT_GEO}, {OUT_QUEUE}, {OUT_TRACE}, {OUT_FRAMES}")
 
 
 if __name__ == "__main__":

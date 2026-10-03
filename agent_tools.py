@@ -3,6 +3,8 @@
      analyse each with the FROZEN pipeline (adas_pipeline.py). Returns camera heading so
      the agent can reject frames from cross streets.
   B. road_context(): OpenStreetMap road type near a point -> should it have lane markings?
+     Retries with back-off when the public Overpass server is busy (504/429/timeouts);
+     failed lookups are never cached.
 Data credits: Mapillary images CC BY-SA 4.0 (creator saved); OSM data (c) OpenStreetMap
 contributors, ODbL."""
 import csv
@@ -22,7 +24,9 @@ FETCH_DIR = Path("data_agent")
 FETCH_META = FETCH_DIR / "metadata.csv"
 OVERPASS_URL = "https://overpass-api.de/api/interpreter"
 OSM_CACHE = Path("osm_cache.json")
-OSM_RADII = (15, 40)      # try close first, then wider (GPS drift / offset centrelines)
+OSM_RADII = (15, 40)       # try close first, then wider (GPS drift / offset centrelines)
+OSM_RETRIES = 3            # attempts per query when the server is busy
+OSM_BACKOFF_S = (5, 15, 30)
 HEADERS = {"User-Agent": "ADAS-Ready Roads student project (OpenCV AI Competition 2026)"}
 
 # Road classes that normally carry lane markings in Australian cities
@@ -114,16 +118,26 @@ def _load_cache():
 
 
 def _query_osm(lat, lon, radius_m):
+    """One Overpass query with retries/back-off. Raises on final failure."""
     query = f'[out:json][timeout:25];way(around:{radius_m},{lat},{lon})[highway];out tags;'
-    resp = requests.post(OVERPASS_URL, data={"data": query}, headers=HEADERS, timeout=60)
-    resp.raise_for_status()
-    time.sleep(1.0)   # be polite to the public Overpass server
-    return [e.get("tags", {}) for e in resp.json().get("elements", [])]
+    last_err = None
+    for attempt in range(OSM_RETRIES):
+        try:
+            resp = requests.post(OVERPASS_URL, data={"data": query}, headers=HEADERS, timeout=60)
+            if resp.status_code in (429, 502, 503, 504):
+                raise requests.HTTPError(f"{resp.status_code} server busy")
+            resp.raise_for_status()
+            time.sleep(1.0)   # be polite to the public Overpass server
+            return [e.get("tags", {}) for e in resp.json().get("elements", [])]
+        except (requests.RequestException, ValueError) as e:
+            last_err = e
+            time.sleep(OSM_BACKOFF_S[min(attempt, len(OSM_BACKOFF_S) - 1)])
+    raise requests.RequestException(f"failed after {OSM_RETRIES} attempts: {last_err}")
 
 
 def road_context(lat, lon):
     """OpenStreetMap ways near a point. Returns the most important road class and whether
-    lane markings are expected (True / False / None = unknown). Cached on disk."""
+    lane markings are expected (True / False / None = unknown). Cached on disk (successes only)."""
     cache = _load_cache()
     key = f"{lat:.5f},{lon:.5f}"
     if key in cache and cache[key].get("source") != "osm_no_road":

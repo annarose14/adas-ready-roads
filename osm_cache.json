@@ -415,5 +415,355 @@
   "radius_m": 15,
   "n_ways": 3,
   "source": "osm"
+ },
+ "-33.92285,151.22018": {
+  "highway": "tertiary",
+  "name": "Cottenham Avenue",
+  "lanes": "",
+  "lane_markings": "no",
+  "expected_marked": false,
+  "radius_m": 15,
+  "n_ways": 2,
+  "source": "osm"
+ },
+ "-33.92243,151.22843": {
+  "highway": "residential",
+  "name": "Harbourne Road",
+  "lanes": "",
+  "lane_markings": "",
+  "expected_marked": false,
+  "radius_m": 15,
+  "n_ways": 2,
+  "source": "osm"
+ },
+ "-33.92315,151.22008": {
+  "highway": "tertiary",
+  "name": "Borrodale Road",
+  "lanes": "",
+  "lane_markings": "",
+  "expected_marked": true,
+  "radius_m": 15,
+  "n_ways": 4,
+  "source": "osm"
+ },
+ "-33.91344,151.22484": {
+  "highway": "primary",
+  "name": "Anzac Parade",
+  "lanes": "2",
+  "lane_markings": "",
+  "expected_marked": true,
+  "radius_m": 15,
+  "n_ways": 10,
+  "source": "osm"
+ },
+ "-33.91313,151.22478": {
+  "highway": "primary",
+  "name": "Anzac Parade",
+  "lanes": "2",
+  "lane_markings": "",
+  "expected_marked": true,
+  "radius_m": 15,
+  "n_ways": 15,
+  "source": "osm"
+ },
+ "-33.92360,151.21999": {
+  "highway": "residential",
+  "name": "Cottenham Avenue",
+  "lanes": "",
+  "lane_markings": "no",
+  "expected_marked": false,
+  "radius_m": 15,
+  "n_ways": 2,
+  "source": "osm"
+ },
+ "-33.92259,151.22020": {
+  "highway": "tertiary",
+  "name": "Cottenham Avenue",
+  "lanes": "",
+  "lane_markings": "no",
+  "expected_marked": false,
+  "radius_m": 15,
+  "n_ways": 2,
+  "source": "osm"
+ },
+ "-33.92299,151.22009": {
+  "highway": "tertiary",
+  "name": "Cottenham Avenue",
+  "lanes": "",
+  "lane_markings": "no",
+  "expected_marked": false,
+  "radius_m": 15,
+  "n_ways": 2,
+  "source": "osm"
+ },
+ "-33.92299,151.22043": {
+  "highway": "tertiary",
+  "name": "Borrodale Road",
+  "lanes": "",
+  "lane_markings": "",
+  "expected_marked": true,
+  "radius_m": 40,
+  "n_ways": 4,
+  "source": "osm"
+ },
+ "-33.92313,151.22001": {
+  "highway": "tertiary",
+  "name": "Borrodale Road",
+  "lanes": "",
+  "lane_markings": "",
+  "expected_marked": true,
+  "radius_m": 15,
+  "n_ways": 4,
+  "source": "osm"
+ },
+ "-33.91305,151.22474": {
+  "highway": "primary",
+  "name": "Anzac Parade",
+  "lanes": "2",
+  "lane_markings": "",
+  "expected_marked": true,
+  "radius_m": 15,
+  "n_ways": 11,
+  "source": "osm"
+ },
+ "-33.92047,151.22048": {
+  "highway": "",
+  "name": "",
+  "lanes": "",
+  "lane_markings": "",
+  "expected_marked": null,
+  "radius_m": 40,
+  "n_ways": 0,
+  "source": "osm_no_road"
+ },
+ "-33.92324,151.22008": {
+  "highway": "tertiary",
+  "name": "Borrodale Road",
+  "lanes": "",
+  "lane_markings": "",
+  "expected_marked": true,
+  "radius_m": 15,
+  "n_ways": 4,
+  "source": "osm"
+ },
+ "-33.82662,151.18831": {
+  "highway": "secondary",
+  "name": "Greenwich Road",
+  "lanes": "4",
+  "lane_markings": "",
+  "expected_marked": true,
+  "radius_m": 15,
+  "n_ways": 7,
+  "source": "osm"
+ },
+ "-33.82109,151.19395": {
+  "highway": "service",
+  "name": "",
+  "lanes": "",
+  "lane_markings": "",
+  "expected_marked": false,
+  "radius_m": 15,
+  "n_ways": 1,
+  "source": "osm"
+ },
+ "-33.82100,151.19393": {
+  "highway": "service",
+  "name": "",
+  "lanes": "",
+  "lane_markings": "",
+  "expected_marked": false,
+  "radius_m": 15,
+  "n_ways": 1,
+  "source": "osm"
+ },
+ "-33.82581,151.19515": {
+  "highway": "residential",
+  "name": "Lithgow Street",
+  "lanes": "",
+  "lane_markings": "no",
+  "expected_marked": false,
+  "radius_m": 40,
+  "n_ways": 1,
+  "source": "osm"
+ },
+ "-33.82124,151.19397": {
+  "highway": "service",
+  "name": "",
+  "lanes": "",
+  "lane_markings": "",
+  "expected_marked": false,
+  "radius_m": 15,
+  "n_ways": 1,
+  "source": "osm"
+ },
+ "-33.82584,151.19516": {
+  "highway": "residential",
+  "name": "Lithgow Street",
+  "lanes": "",
+  "lane_markings": "no",
+  "expected_marked": false,
+  "radius_m": 40,
+  "n_ways": 1,
+  "source": "osm"
+ },
+ "-33.82133,151.19388": {
+  "highway": "service",
+  "name": "",
+  "lanes": "",
+  "lane_markings": "",
+  "expected_marked": false,
+  "radius_m": 15,
+  "n_ways": 1,
+  "source": "osm"
+ },
+ "-33.81951,151.18942": {
+  "highway": "service",
+  "name": "Reserve Road",
+  "lanes": "",
+  "lane_markings": "",
+  "expected_marked": false,
+  "radius_m": 15,
+  "n_ways": 2,
+  "source": "osm"
+ },
+ "-33.88069,151.15378": {
+  "highway": "",
+  "name": "",
+  "lanes": "",
+  "lane_markings": "",
+  "expected_marked": null,
+  "radius_m": 40,
+  "n_ways": 0,
+  "source": "osm_no_road"
+ },
+ "-33.88038,151.15086": {
+  "highway": "residential",
+  "name": "Allen Street",
+  "lanes": "2",
+  "lane_markings": "",
+  "expected_marked": true,
+  "radius_m": 15,
+  "n_ways": 5,
+  "source": "osm"
+ },
+ "-33.88722,151.15752": {
+  "highway": "secondary",
+  "name": "Norton Street",
+  "lanes": "2",
+  "lane_markings": "",
+  "expected_marked": true,
+  "radius_m": 15,
+  "n_ways": 8,
+  "source": "osm"
+ },
+ "-33.88713,151.15742": {
+  "highway": "secondary",
+  "name": "Norton Street",
+  "lanes": "2",
+  "lane_markings": "",
+  "expected_marked": true,
+  "radius_m": 15,
+  "n_ways": 7,
+  "source": "osm"
+ },
+ "-33.88694,151.15723": {
+  "highway": "secondary",
+  "name": "Norton Street",
+  "lanes": "2",
+  "lane_markings": "",
+  "expected_marked": true,
+  "radius_m": 40,
+  "n_ways": 10,
+  "source": "osm"
+ },
+ "-33.91769,151.16790": {
+  "highway": "primary",
+  "name": "Railway Road",
+  "lanes": "4",
+  "lane_markings": "",
+  "expected_marked": true,
+  "radius_m": 15,
+  "n_ways": 11,
+  "source": "osm"
+ },
+ "-33.91748,151.16756": {
+  "highway": "primary",
+  "name": "Railway Road",
+  "lanes": "4",
+  "lane_markings": "",
+  "expected_marked": true,
+  "radius_m": 15,
+  "n_ways": 3,
+  "source": "osm"
+ },
+ "-33.91742,151.16750": {
+  "highway": "primary",
+  "name": "Railway Road",
+  "lanes": "4",
+  "lane_markings": "",
+  "expected_marked": true,
+  "radius_m": 15,
+  "n_ways": 3,
+  "source": "osm"
+ },
+ "-33.91750,151.16763": {
+  "highway": "primary",
+  "name": "Railway Road",
+  "lanes": "4",
+  "lane_markings": "",
+  "expected_marked": true,
+  "radius_m": 15,
+  "n_ways": 3,
+  "source": "osm"
+ },
+ "-33.91730,151.16738": {
+  "highway": "primary",
+  "name": "Railway Road",
+  "lanes": "4",
+  "lane_markings": "",
+  "expected_marked": true,
+  "radius_m": 15,
+  "n_ways": 3,
+  "source": "osm"
+ },
+ "-33.91441,151.16709": {
+  "highway": "unclassified",
+  "name": "Burrows Avenue",
+  "lanes": "2",
+  "lane_markings": "",
+  "expected_marked": true,
+  "radius_m": 40,
+  "n_ways": 33,
+  "source": "osm"
+ },
+ "-33.91739,151.16748": {
+  "highway": "primary",
+  "name": "Railway Road",
+  "lanes": "4",
+  "lane_markings": "",
+  "expected_marked": true,
+  "radius_m": 15,
+  "n_ways": 3,
+  "source": "osm"
+ },
+ "-33.91752,151.16759": {
+  "highway": "primary",
+  "name": "Railway Road",
+  "lanes": "4",
+  "lane_markings": "",
+  "expected_marked": true,
+  "radius_m": 15,
+  "n_ways": 3,
+  "source": "osm"
+ },
+ "-33.91752,151.16780": {
+  "highway": "primary",
+  "name": "Railway Road",
+  "lanes": "4",
+  "lane_markings": "",
+  "expected_marked": true,
+  "radius_m": 15,
+  "n_ways": 6,
+  "source": "osm"
  }
 }
