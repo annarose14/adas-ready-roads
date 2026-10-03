@@ -1,5 +1,6 @@
 .venv/
 data/
+data_test/
 data_agent/
 output/
 output_v1/
@@ -8,6 +9,7 @@ output_v3a/
 output_v3b/
 output_v3c/
 output_final/
+output_test/
 review/
 review_segments/
 seg_test/
