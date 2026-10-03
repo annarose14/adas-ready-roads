@@ -49,3 +49,17 @@ compare_engines.py: classic vs new engine verdicts agree on 318/320 usable image
 - Mapillary token stored as function environment setting (not in code/git)
 - Verified: upload + mapillary_id both return identical verdict to local pipeline (ready, contrast 86.3)
 - Latency: cold start ~14.7 s round trip; warm ~2.7 s processing/photo at 2048 MB (Mac: ~0.5 s)
+
+## HIGH-priority validation by photo review (3 Oct, view_segments.py)
+6 HIGH segments = only 2 locations (overlapping segments from multiple sequences).
+- Anzac Pde S0006: wide junction + roadworks; dashed lines clearly visible -> detector limitation
+- Anzac Pde S0007: lines visible; tram tracks create false paint; vans occlude -> limitation
+- Anzac Pde S0014: large bonnet, tiny ROI; lines visible -> limitation
+- Anzac Pde S0038: 3 of original frames are PEDESTRIAN shop-window/footpath photos counted as
+  "no lanes" -> BUG; fetched frames dominated by light-rail tram
+- Railway Rd S0070: pale concrete junction, faint markings -> plausible GENUINE finding
+  (low paint/surface contrast, consistent with concrete insight)
+- Railway Rd S0071: lines visible; segmentation labelled sunlit road as vehicle -> limitation
+Conclusion: HIGH flags mostly false alarms from complex urban scenes. Fixes planned:
+(1) vehicle-speed filter on sequences, (2) OSM junction detection -> review,
+(3) spatial merging of duplicate segments. Remaining: tram tracks, roadworks, glare = limitations.

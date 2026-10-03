@@ -9,6 +9,7 @@ output_v3b/
 output_v3c/
 output_final/
 review/
+review_segments/
 seg_test/
 models/
 __pycache__/
