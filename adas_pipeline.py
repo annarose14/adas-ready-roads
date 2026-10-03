@@ -8,11 +8,18 @@ Version history (see notes/ and eval_*.txt):
         weakest-line scoring                      -> frozen here
 Thresholds chosen on DEV set from the trade-off curve (tune.py): READY_T=75
 prioritises catching degraded roads (10/12 dev) over false alarms (6/20 dev).
+
+DNN engine: OpenCV 5's new DNN engine segfaults on this model on Linux/ARM64
+(AWS Lambda) and crashed intermittently on macOS; the classic engine is stable
+(~300 ms/frame on Lambda ARM). Default is therefore ENGINE_CLASSIC, overridable
+with env var DNN_ENGINE=classic|new|auto.
 Usage:
     from adas_pipeline import RoadAuditor, resize, quality_check
     auditor = RoadAuditor()
     result = auditor.analyse(resize(img))
 """
+import os
+
 import cv2 as cv
 import numpy as np
 
@@ -158,9 +165,18 @@ def to_record(r):
     return {k: v for k, v in r.items() if not k.startswith("_")}
 
 
+def _load_net(model_path, engine):
+    if engine == "classic":
+        return cv.dnn.readNetFromONNX(model_path, engine=cv.dnn.ENGINE_CLASSIC)
+    if engine == "new":
+        return cv.dnn.readNetFromONNX(model_path, engine=cv.dnn.ENGINE_NEW)
+    return cv.dnn.readNetFromONNX(model_path)          # "auto": OpenCV's default
+
+
 class RoadAuditor:
-    def __init__(self, model_path=MODEL):
-        self.net = cv.dnn.readNetFromONNX(model_path)
+    def __init__(self, model_path=MODEL, engine=None):
+        self.engine = (engine or os.environ.get("DNN_ENGINE", "classic")).lower()
+        self.net = _load_net(model_path, self.engine)
 
     def segment(self, img):
         rgb = cv.cvtColor(cv.resize(img, (SEG_W, SEG_H)), cv.COLOR_BGR2RGB).astype(np.float32) / 255.0

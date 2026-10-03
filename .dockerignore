@@ -1,0 +1,14 @@
+.venv/
+data/
+data_agent/
+output*/
+review/
+seg_test/
+notes/
+.git/
+__pycache__/
+*.csv
+*.geojson
+*.jsonl
+*.txt
+!requirements-lambda.txt

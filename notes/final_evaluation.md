@@ -36,3 +36,9 @@ This test set is now USED: no further changes judged against it.
   frames in the same Mapillary sequence) - the agent loop.
 - Treat persistent no_lanes on a road expected to be marked as a fail signal.
 - Final evaluation on a FRESH test set from new, unseen suburbs.
+
+## DNN engine change for deployment (3 Oct)
+OpenCV 5 new DNN engine segfaults on this model on Linux/ARM64 (AWS Lambda), reproducibly
+at net.forward(); classic engine stable (~300 ms/frame, ARM64). Deployed with ENGINE_CLASSIC.
+compare_engines.py: classic vs new engine verdicts agree on 318/320 usable images (99.4%);
+2 differences are threshold edge cases. Reported evaluation numbers were made with the new engine.
