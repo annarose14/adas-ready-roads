@@ -1,16 +1,19 @@
 """ADAS-Ready Roads - agent tools.
   A. fetch_frames(): get more Mapillary images near a point (prefer same sequence),
-     analyse each with the FROZEN pipeline (adas_pipeline.py). Returns camera heading so
-     the agent can reject frames from cross streets.
+     only from VEHICLE-speed sequences (speed estimated from the API's own GPS/timestamps),
+     analyse each with the FROZEN pipeline (adas_pipeline.py).
   B. road_context(): OpenStreetMap road type near a point -> should it have lane markings?
-     Retries with back-off when the public Overpass server is busy (504/429/timeouts);
-     failed lookups are never cached.
+     Also flags JUNCTIONS (2+ differently named roads nearby). Retries with back-off when
+     the public Overpass server is busy; failed lookups are never cached.
 Data credits: Mapillary images CC BY-SA 4.0 (creator saved); OSM data (c) OpenStreetMap
 contributors, ODbL."""
 import csv
 import json
+import math
 import os
+import statistics
 import time
+from collections import defaultdict
 from pathlib import Path
 
 import cv2 as cv
@@ -22,10 +25,12 @@ MAPILLARY_URL = "https://graph.mapillary.com/images"
 FIELDS = "id,thumb_2048_url,computed_geometry,captured_at,compass_angle,sequence,creator"
 FETCH_DIR = Path("data_agent")
 FETCH_META = FETCH_DIR / "metadata.csv"
+MIN_VEHICLE_KMH = 10       # other people's sequences slower than this are not used
 OVERPASS_URL = "https://overpass-api.de/api/interpreter"
 OSM_CACHE = Path("osm_cache.json")
+CACHE_VERSION = 2          # v2 adds junction detection; older cache entries are re-queried
 OSM_RADII = (15, 40)       # try close first, then wider (GPS drift / offset centrelines)
-OSM_RETRIES = 3            # attempts per query when the server is busy
+OSM_RETRIES = 3
 OSM_BACKOFF_S = (5, 15, 30)
 HEADERS = {"User-Agent": "ADAS-Ready Roads student project (OpenCV AI Competition 2026)"}
 
@@ -46,9 +51,39 @@ def get_auditor():
     return _auditor
 
 
+def _dist_m(lat1, lon1, lat2, lon2):
+    dlat = math.radians(lat2 - lat1)
+    dlon = math.radians(lon2 - lon1)
+    a = (math.sin(dlat / 2) ** 2 + math.cos(math.radians(lat1)) *
+         math.cos(math.radians(lat2)) * math.sin(dlon / 2) ** 2)
+    return 6371000 * 2 * math.asin(math.sqrt(a))
+
+
+def _sequence_speeds(items):
+    """Median km/h per sequence from the API items' own GPS + capture times."""
+    by_seq = defaultdict(list)
+    for d in items:
+        c = (d.get("computed_geometry") or {}).get("coordinates")
+        t = d.get("captured_at")
+        if c and t:
+            t = float(t)
+            by_seq[d.get("sequence")].append((t / 1000.0 if t > 1e11 else t, c[1], c[0]))
+    speeds = {}
+    for seq, pts in by_seq.items():
+        pts.sort()
+        vals = []
+        for (t1, la1, lo1), (t2, la2, lo2) in zip(pts, pts[1:]):
+            dt = t2 - t1
+            if 0.5 <= dt <= 60:
+                vals.append(_dist_m(la1, lo1, la2, lo2) / dt * 3.6)
+        speeds[seq] = statistics.median(vals) if vals else None
+    return speeds
+
+
 # ---------------------------------------------------------------- Tool A
 def fetch_frames(lat, lon, sequence=None, exclude=(), radius_deg=0.0005, limit=10):
     """Fetch up to `limit` NEW frames within ~radius of (lat, lon), analyse them.
+    Same-sequence frames are always eligible; other sequences must be vehicle-speed.
     `exclude`: image ids already known (skipped). Returns (frames, status)."""
     token = os.environ.get("MAPILLARY_TOKEN")
     if not token:
@@ -63,10 +98,12 @@ def fetch_frames(lat, lon, sequence=None, exclude=(), radius_deg=0.0005, limit=1
     if resp.status_code != 200:
         return [], f"api_error_{resp.status_code}: {resp.text[:300]}"
     data = resp.json().get("data", [])
+    speeds = _sequence_speeds(data)
     excluded = set(exclude)
     same = [d for d in data if sequence and d.get("sequence") == sequence]
     other = [d for d in data if d not in same]
-    candidates = [d for d in same + other if d["id"] not in excluded]
+    other_vehicle = [d for d in other if (speeds.get(d.get("sequence")) or 0) >= MIN_VEHICLE_KMH]
+    candidates = [d for d in same + other_vehicle if d["id"] not in excluded]
 
     FETCH_DIR.mkdir(exist_ok=True)
     new_meta = not FETCH_META.exists()
@@ -109,7 +146,8 @@ def fetch_frames(lat, lon, sequence=None, exclude=(), radius_deg=0.0005, limit=1
             mw.writerow([d["id"], coords[0], coords[1], d.get("captured_at", ""), compass,
                          d.get("sequence", ""), creator])
             frames.append(rec)
-    return frames, f"ok ({len(data)} in area, {len(same)} same sequence, {len(candidates)} new)"
+    return frames, (f"ok ({len(data)} in area, {len(same)} same sequence, "
+                    f"{len(other) - len(other_vehicle)} non-vehicle skipped, {len(candidates)} new)")
 
 
 # ---------------------------------------------------------------- Tool B
@@ -136,12 +174,13 @@ def _query_osm(lat, lon, radius_m):
 
 
 def road_context(lat, lon):
-    """OpenStreetMap ways near a point. Returns the most important road class and whether
-    lane markings are expected (True / False / None = unknown). Cached on disk (successes only)."""
+    """OpenStreetMap ways near a point: most important road class, whether lane markings are
+    expected (True / False / None = unknown), and whether this is a junction. Cached (successes only)."""
     cache = _load_cache()
     key = f"{lat:.5f},{lon:.5f}"
-    if key in cache and cache[key].get("source") != "osm_no_road":
-        return cache[key]
+    hit = cache.get(key)
+    if hit and hit.get("v") == CACHE_VERSION and hit.get("source") != "osm_no_road":
+        return hit
 
     roads, radius_used, n_ways = [], None, 0
     try:
@@ -153,12 +192,14 @@ def road_context(lat, lon):
                 radius_used = radius
                 break
     except (requests.RequestException, ValueError) as e:
-        return {"highway": "", "expected_marked": None, "source": f"osm_error: {e}"}
+        return {"highway": "", "expected_marked": None, "junction": False,
+                "source": f"osm_error: {e}"}
 
     if not roads:
         ctx = {"highway": "", "name": "", "lanes": "", "lane_markings": "",
-               "expected_marked": None, "radius_m": OSM_RADII[-1], "n_ways": n_ways,
-               "source": "osm_no_road"}
+               "expected_marked": None, "junction": False, "roads_nearby": "",
+               "radius_m": OSM_RADII[-1], "n_ways": n_ways, "source": "osm_no_road",
+               "v": CACHE_VERSION}
     else:
         best = min(roads, key=lambda t: CLASS_RANK.index(t["highway"]))
         cls = best.get("highway", "")
@@ -171,9 +212,11 @@ def road_context(lat, lon):
             expected = True
         if marking_tag == "no":
             expected = False
+        names = sorted({t["name"] for t in roads if t.get("name")})
         ctx = {"highway": cls, "name": best.get("name", ""), "lanes": lanes,
                "lane_markings": marking_tag, "expected_marked": expected,
-               "radius_m": radius_used, "n_ways": n_ways, "source": "osm"}
+               "junction": len(names) >= 2, "roads_nearby": "; ".join(names),
+               "radius_m": radius_used, "n_ways": n_ways, "source": "osm", "v": CACHE_VERSION}
     cache[key] = ctx
     OSM_CACHE.write_text(json.dumps(cache, indent=1))
     return ctx

@@ -5,8 +5,12 @@
   "lanes": "",
   "lane_markings": "no",
   "expected_marked": false,
+  "junction": false,
+  "roads_nearby": "Doncaster Avenue",
+  "radius_m": 15,
   "n_ways": 9,
-  "source": "osm"
+  "source": "osm",
+  "v": 2
  },
  "-33.91334,151.22468": {
   "highway": "primary",
@@ -14,8 +18,12 @@
   "lanes": "2",
   "lane_markings": "",
   "expected_marked": true,
+  "junction": true,
+  "roads_nearby": "Anzac Parade; Doncaster Avenue",
+  "radius_m": 15,
   "n_ways": 9,
-  "source": "osm"
+  "source": "osm",
+  "v": 2
  },
  "-33.92281,151.22022": {
   "highway": "tertiary",
@@ -23,8 +31,12 @@
   "lanes": "",
   "lane_markings": "no",
   "expected_marked": false,
+  "junction": false,
+  "roads_nearby": "Cottenham Avenue",
+  "radius_m": 15,
   "n_ways": 1,
-  "source": "osm"
+  "source": "osm",
+  "v": 2
  },
  "-33.91716,151.22110": {
   "highway": "tertiary",
@@ -32,9 +44,12 @@
   "lanes": "2",
   "lane_markings": "yes",
   "expected_marked": true,
+  "junction": false,
+  "roads_nearby": "Day Avenue",
   "radius_m": 15,
   "n_ways": 3,
-  "source": "osm"
+  "source": "osm",
+  "v": 2
  },
  "-33.91301,151.22465": {
   "highway": "primary",
@@ -52,9 +67,12 @@
   "lanes": "",
   "lane_markings": "no",
   "expected_marked": false,
+  "junction": false,
+  "roads_nearby": "Cottenham Avenue",
   "radius_m": 15,
   "n_ways": 2,
-  "source": "osm"
+  "source": "osm",
+  "v": 2
  },
  "-33.92290,151.22005": {
   "highway": "tertiary",
@@ -62,9 +80,12 @@
   "lanes": "",
   "lane_markings": "no",
   "expected_marked": false,
+  "junction": false,
+  "roads_nearby": "Cottenham Avenue",
   "radius_m": 15,
   "n_ways": 2,
-  "source": "osm"
+  "source": "osm",
+  "v": 2
  },
  "-33.92271,151.22556": {
   "highway": "tertiary",
@@ -72,9 +93,12 @@
   "lanes": "2",
   "lane_markings": "",
   "expected_marked": true,
+  "junction": true,
+  "roads_nearby": "Houston Road; See Lane",
   "radius_m": 15,
   "n_ways": 5,
-  "source": "osm"
+  "source": "osm",
+  "v": 2
  },
  "-33.91313,151.22466": {
   "highway": "primary",
@@ -82,9 +106,12 @@
   "lanes": "2",
   "lane_markings": "",
   "expected_marked": true,
+  "junction": true,
+  "roads_nearby": "Anzac Parade; Doncaster Avenue",
   "radius_m": 15,
   "n_ways": 12,
-  "source": "osm"
+  "source": "osm",
+  "v": 2
  },
  "-33.92238,151.22028": {
   "highway": "tertiary",
@@ -102,9 +129,12 @@
   "lanes": "",
   "lane_markings": "no",
   "expected_marked": false,
+  "junction": false,
+  "roads_nearby": "Cottenham Avenue",
   "radius_m": 15,
   "n_ways": 1,
-  "source": "osm"
+  "source": "osm",
+  "v": 2
  },
  "-33.92225,151.22031": {
   "highway": "tertiary",
@@ -112,9 +142,12 @@
   "lanes": "",
   "lane_markings": "",
   "expected_marked": true,
+  "junction": true,
+  "roads_nearby": "Cottenham Avenue; Tresidder Avenue",
   "radius_m": 15,
   "n_ways": 4,
-  "source": "osm"
+  "source": "osm",
+  "v": 2
  },
  "-33.92341,151.22003": {
   "highway": "residential",
@@ -122,9 +155,12 @@
   "lanes": "",
   "lane_markings": "no",
   "expected_marked": false,
+  "junction": false,
+  "roads_nearby": "Cottenham Avenue",
   "radius_m": 15,
   "n_ways": 2,
-  "source": "osm"
+  "source": "osm",
+  "v": 2
  },
  "-33.91261,151.22230": {
   "highway": "residential",
@@ -132,9 +168,12 @@
   "lanes": "2",
   "lane_markings": "",
   "expected_marked": true,
+  "junction": false,
+  "roads_nearby": "Grosvenor Street",
   "radius_m": 15,
   "n_ways": 1,
-  "source": "osm"
+  "source": "osm",
+  "v": 2
  },
  "-33.92279,151.22015": {
   "highway": "tertiary",
@@ -142,9 +181,12 @@
   "lanes": "",
   "lane_markings": "no",
   "expected_marked": false,
+  "junction": false,
+  "roads_nearby": "Cottenham Avenue",
   "radius_m": 15,
   "n_ways": 2,
-  "source": "osm"
+  "source": "osm",
+  "v": 2
  },
  "-33.92249,151.22010": {
   "highway": "tertiary",
@@ -152,9 +194,12 @@
   "lanes": "",
   "lane_markings": "no",
   "expected_marked": false,
+  "junction": false,
+  "roads_nearby": "Cottenham Avenue",
   "radius_m": 15,
   "n_ways": 2,
-  "source": "osm"
+  "source": "osm",
+  "v": 2
  },
  "-33.92360,151.21991": {
   "highway": "residential",
@@ -162,9 +207,12 @@
   "lanes": "",
   "lane_markings": "no",
   "expected_marked": false,
+  "junction": false,
+  "roads_nearby": "Cottenham Avenue",
   "radius_m": 15,
   "n_ways": 2,
-  "source": "osm"
+  "source": "osm",
+  "v": 2
  },
  "-33.92272,151.22019": {
   "highway": "tertiary",
@@ -172,9 +220,12 @@
   "lanes": "",
   "lane_markings": "no",
   "expected_marked": false,
+  "junction": false,
+  "roads_nearby": "Cottenham Avenue",
   "radius_m": 15,
   "n_ways": 2,
-  "source": "osm"
+  "source": "osm",
+  "v": 2
  },
  "-33.91598,151.23418": {
   "highway": "tertiary",
@@ -182,9 +233,12 @@
   "lanes": "2",
   "lane_markings": "",
   "expected_marked": true,
+  "junction": false,
+  "roads_nearby": "High Street",
   "radius_m": 15,
   "n_ways": 7,
-  "source": "osm"
+  "source": "osm",
+  "v": 2
  },
  "-33.91314,151.22461": {
   "highway": "primary",
@@ -192,9 +246,12 @@
   "lanes": "2",
   "lane_markings": "",
   "expected_marked": true,
+  "junction": true,
+  "roads_nearby": "Anzac Parade; Doncaster Avenue",
   "radius_m": 15,
   "n_ways": 9,
-  "source": "osm"
+  "source": "osm",
+  "v": 2
  },
  "-33.92316,151.22006": {
   "highway": "tertiary",
@@ -202,9 +259,12 @@
   "lanes": "",
   "lane_markings": "",
   "expected_marked": true,
+  "junction": true,
+  "roads_nearby": "Borrodale Road; Cottenham Avenue",
   "radius_m": 15,
   "n_ways": 4,
-  "source": "osm"
+  "source": "osm",
+  "v": 2
  },
  "-33.92287,151.22017": {
   "highway": "tertiary",
@@ -212,9 +272,12 @@
   "lanes": "",
   "lane_markings": "no",
   "expected_marked": false,
+  "junction": false,
+  "roads_nearby": "Cottenham Avenue",
   "radius_m": 15,
   "n_ways": 2,
-  "source": "osm"
+  "source": "osm",
+  "v": 2
  },
  "-33.91317,151.22486": {
   "highway": "primary",
@@ -222,9 +285,12 @@
   "lanes": "2",
   "lane_markings": "",
   "expected_marked": true,
+  "junction": true,
+  "roads_nearby": "Anzac Parade; Doncaster Avenue",
   "radius_m": 15,
   "n_ways": 12,
-  "source": "osm"
+  "source": "osm",
+  "v": 2
  },
  "-33.92293,151.22004": {
   "highway": "tertiary",
@@ -232,9 +298,12 @@
   "lanes": "",
   "lane_markings": "no",
   "expected_marked": false,
+  "junction": false,
+  "roads_nearby": "Cottenham Avenue",
   "radius_m": 15,
   "n_ways": 2,
-  "source": "osm"
+  "source": "osm",
+  "v": 2
  },
  "-33.91305,151.22443": {
   "highway": "primary",
@@ -252,9 +321,12 @@
   "lanes": "",
   "lane_markings": "",
   "expected_marked": true,
+  "junction": true,
+  "roads_nearby": "Borrodale Road; Cottenham Avenue",
   "radius_m": 15,
   "n_ways": 3,
-  "source": "osm"
+  "source": "osm",
+  "v": 2
  },
  "-33.82520,151.19961": {
   "highway": "unclassified",
@@ -262,9 +334,12 @@
   "lanes": "2",
   "lane_markings": "",
   "expected_marked": true,
+  "junction": false,
+  "roads_nearby": "Clarke Street",
   "radius_m": 15,
   "n_ways": 3,
-  "source": "osm"
+  "source": "osm",
+  "v": 2
  },
  "-33.82590,151.19519": {
   "highway": "residential",
@@ -272,9 +347,12 @@
   "lanes": "",
   "lane_markings": "no",
   "expected_marked": false,
+  "junction": false,
+  "roads_nearby": "Lithgow Street",
   "radius_m": 40,
   "n_ways": 1,
-  "source": "osm"
+  "source": "osm",
+  "v": 2
  },
  "-33.81906,151.19357": {
   "highway": "service",
@@ -282,9 +360,12 @@
   "lanes": "",
   "lane_markings": "",
   "expected_marked": false,
+  "junction": false,
+  "roads_nearby": "",
   "radius_m": 15,
   "n_ways": 2,
-  "source": "osm"
+  "source": "osm",
+  "v": 2
  },
  "-33.81902,151.19357": {
   "highway": "service",
@@ -292,9 +373,12 @@
   "lanes": "",
   "lane_markings": "",
   "expected_marked": false,
+  "junction": false,
+  "roads_nearby": "",
   "radius_m": 15,
   "n_ways": 2,
-  "source": "osm"
+  "source": "osm",
+  "v": 2
  },
  "-33.82135,151.19391": {
   "highway": "service",
@@ -302,9 +386,12 @@
   "lanes": "",
   "lane_markings": "",
   "expected_marked": false,
+  "junction": false,
+  "roads_nearby": "",
   "radius_m": 15,
   "n_ways": 1,
-  "source": "osm"
+  "source": "osm",
+  "v": 2
  },
  "-33.82123,151.19468": {
   "highway": "service",
@@ -312,9 +399,12 @@
   "lanes": "",
   "lane_markings": "",
   "expected_marked": false,
+  "junction": false,
+  "roads_nearby": "Evans Lane",
   "radius_m": 15,
   "n_ways": 2,
-  "source": "osm"
+  "source": "osm",
+  "v": 2
  },
  "-33.82140,151.19400": {
   "highway": "service",
@@ -322,9 +412,12 @@
   "lanes": "",
   "lane_markings": "",
   "expected_marked": false,
+  "junction": false,
+  "roads_nearby": "",
   "radius_m": 15,
   "n_ways": 1,
-  "source": "osm"
+  "source": "osm",
+  "v": 2
  },
  "-33.88723,151.15752": {
   "highway": "secondary",
@@ -332,9 +425,12 @@
   "lanes": "2",
   "lane_markings": "",
   "expected_marked": true,
+  "junction": false,
+  "roads_nearby": "Norton Street",
   "radius_m": 15,
   "n_ways": 7,
-  "source": "osm"
+  "source": "osm",
+  "v": 2
  },
  "-33.88036,151.15090": {
   "highway": "residential",
@@ -342,9 +438,12 @@
   "lanes": "",
   "lane_markings": "no",
   "expected_marked": false,
+  "junction": true,
+  "roads_nearby": "Allen Street; Edith Street",
   "radius_m": 15,
   "n_ways": 6,
-  "source": "osm"
+  "source": "osm",
+  "v": 2
  },
  "-33.88073,151.15203": {
   "highway": "residential",
@@ -352,9 +451,12 @@
   "lanes": "2",
   "lane_markings": "",
   "expected_marked": true,
+  "junction": false,
+  "roads_nearby": "Elswick Street",
   "radius_m": 15,
   "n_ways": 3,
-  "source": "osm"
+  "source": "osm",
+  "v": 2
  },
  "-33.91747,151.16770": {
   "highway": "primary",
@@ -362,9 +464,12 @@
   "lanes": "4",
   "lane_markings": "",
   "expected_marked": true,
+  "junction": false,
+  "roads_nearby": "Railway Road",
   "radius_m": 15,
   "n_ways": 3,
-  "source": "osm"
+  "source": "osm",
+  "v": 2
  },
  "-33.91751,151.16758": {
   "highway": "primary",
@@ -372,9 +477,12 @@
   "lanes": "4",
   "lane_markings": "",
   "expected_marked": true,
+  "junction": false,
+  "roads_nearby": "Railway Road",
   "radius_m": 15,
   "n_ways": 3,
-  "source": "osm"
+  "source": "osm",
+  "v": 2
  },
  "-33.91763,151.16771": {
   "highway": "primary",
@@ -382,9 +490,12 @@
   "lanes": "4",
   "lane_markings": "",
   "expected_marked": true,
+  "junction": true,
+  "roads_nearby": "Henry Street; Railway Road",
   "radius_m": 15,
   "n_ways": 10,
-  "source": "osm"
+  "source": "osm",
+  "v": 2
  },
  "-33.91741,151.16759": {
   "highway": "primary",
@@ -392,9 +503,12 @@
   "lanes": "4",
   "lane_markings": "",
   "expected_marked": true,
+  "junction": false,
+  "roads_nearby": "Railway Road",
   "radius_m": 15,
   "n_ways": 3,
-  "source": "osm"
+  "source": "osm",
+  "v": 2
  },
  "-33.91751,151.16767": {
   "highway": "primary",
@@ -402,9 +516,12 @@
   "lanes": "4",
   "lane_markings": "",
   "expected_marked": true,
+  "junction": false,
+  "roads_nearby": "Railway Road",
   "radius_m": 15,
   "n_ways": 4,
-  "source": "osm"
+  "source": "osm",
+  "v": 2
  },
  "-33.91747,151.16755": {
   "highway": "primary",
@@ -412,9 +529,12 @@
   "lanes": "4",
   "lane_markings": "",
   "expected_marked": true,
+  "junction": false,
+  "roads_nearby": "Railway Road",
   "radius_m": 15,
   "n_ways": 3,
-  "source": "osm"
+  "source": "osm",
+  "v": 2
  },
  "-33.92285,151.22018": {
   "highway": "tertiary",
@@ -432,9 +552,12 @@
   "lanes": "",
   "lane_markings": "",
   "expected_marked": false,
+  "junction": false,
+  "roads_nearby": "Harbourne Road",
   "radius_m": 15,
   "n_ways": 2,
-  "source": "osm"
+  "source": "osm",
+  "v": 2
  },
  "-33.92315,151.22008": {
   "highway": "tertiary",
@@ -462,9 +585,12 @@
   "lanes": "2",
   "lane_markings": "",
   "expected_marked": true,
+  "junction": true,
+  "roads_nearby": "Anzac Parade; Doncaster Avenue",
   "radius_m": 15,
   "n_ways": 15,
-  "source": "osm"
+  "source": "osm",
+  "v": 2
  },
  "-33.92360,151.21999": {
   "highway": "residential",
@@ -472,9 +598,12 @@
   "lanes": "",
   "lane_markings": "no",
   "expected_marked": false,
+  "junction": false,
+  "roads_nearby": "Cottenham Avenue",
   "radius_m": 15,
   "n_ways": 2,
-  "source": "osm"
+  "source": "osm",
+  "v": 2
  },
  "-33.92259,151.22020": {
   "highway": "tertiary",
@@ -482,9 +611,12 @@
   "lanes": "",
   "lane_markings": "no",
   "expected_marked": false,
+  "junction": false,
+  "roads_nearby": "Cottenham Avenue",
   "radius_m": 15,
   "n_ways": 2,
-  "source": "osm"
+  "source": "osm",
+  "v": 2
  },
  "-33.92299,151.22009": {
   "highway": "tertiary",
@@ -492,9 +624,12 @@
   "lanes": "",
   "lane_markings": "no",
   "expected_marked": false,
+  "junction": false,
+  "roads_nearby": "Cottenham Avenue",
   "radius_m": 15,
   "n_ways": 2,
-  "source": "osm"
+  "source": "osm",
+  "v": 2
  },
  "-33.92299,151.22043": {
   "highway": "tertiary",
@@ -502,9 +637,12 @@
   "lanes": "",
   "lane_markings": "",
   "expected_marked": true,
+  "junction": true,
+  "roads_nearby": "Borrodale Road; Cottenham Avenue",
   "radius_m": 40,
   "n_ways": 4,
-  "source": "osm"
+  "source": "osm",
+  "v": 2
  },
  "-33.92313,151.22001": {
   "highway": "tertiary",
@@ -512,9 +650,12 @@
   "lanes": "",
   "lane_markings": "",
   "expected_marked": true,
+  "junction": true,
+  "roads_nearby": "Borrodale Road; Cottenham Avenue",
   "radius_m": 15,
   "n_ways": 4,
-  "source": "osm"
+  "source": "osm",
+  "v": 2
  },
  "-33.91305,151.22474": {
   "highway": "primary",
@@ -522,9 +663,12 @@
   "lanes": "2",
   "lane_markings": "",
   "expected_marked": true,
+  "junction": true,
+  "roads_nearby": "Anzac Parade; Doncaster Avenue",
   "radius_m": 15,
   "n_ways": 11,
-  "source": "osm"
+  "source": "osm",
+  "v": 2
  },
  "-33.92047,151.22048": {
   "highway": "",
@@ -542,9 +686,12 @@
   "lanes": "",
   "lane_markings": "",
   "expected_marked": true,
+  "junction": true,
+  "roads_nearby": "Borrodale Road; Cottenham Avenue",
   "radius_m": 15,
   "n_ways": 4,
-  "source": "osm"
+  "source": "osm",
+  "v": 2
  },
  "-33.82662,151.18831": {
   "highway": "secondary",
@@ -552,9 +699,12 @@
   "lanes": "4",
   "lane_markings": "",
   "expected_marked": true,
+  "junction": true,
+  "roads_nearby": "Anglo Road; Greenwich Road",
   "radius_m": 15,
   "n_ways": 7,
-  "source": "osm"
+  "source": "osm",
+  "v": 2
  },
  "-33.82109,151.19395": {
   "highway": "service",
@@ -572,9 +722,12 @@
   "lanes": "",
   "lane_markings": "",
   "expected_marked": false,
+  "junction": false,
+  "roads_nearby": "",
   "radius_m": 15,
   "n_ways": 1,
-  "source": "osm"
+  "source": "osm",
+  "v": 2
  },
  "-33.82581,151.19515": {
   "highway": "residential",
@@ -592,9 +745,12 @@
   "lanes": "",
   "lane_markings": "",
   "expected_marked": false,
+  "junction": false,
+  "roads_nearby": "",
   "radius_m": 15,
   "n_ways": 1,
-  "source": "osm"
+  "source": "osm",
+  "v": 2
  },
  "-33.82584,151.19516": {
   "highway": "residential",
@@ -602,9 +758,12 @@
   "lanes": "",
   "lane_markings": "no",
   "expected_marked": false,
+  "junction": false,
+  "roads_nearby": "Lithgow Street",
   "radius_m": 40,
   "n_ways": 1,
-  "source": "osm"
+  "source": "osm",
+  "v": 2
  },
  "-33.82133,151.19388": {
   "highway": "service",
@@ -612,9 +771,12 @@
   "lanes": "",
   "lane_markings": "",
   "expected_marked": false,
+  "junction": false,
+  "roads_nearby": "",
   "radius_m": 15,
   "n_ways": 1,
-  "source": "osm"
+  "source": "osm",
+  "v": 2
  },
  "-33.81951,151.18942": {
   "highway": "service",
@@ -622,9 +784,12 @@
   "lanes": "",
   "lane_markings": "",
   "expected_marked": false,
+  "junction": false,
+  "roads_nearby": "Reserve Road",
   "radius_m": 15,
   "n_ways": 2,
-  "source": "osm"
+  "source": "osm",
+  "v": 2
  },
  "-33.88069,151.15378": {
   "highway": "",
@@ -632,9 +797,12 @@
   "lanes": "",
   "lane_markings": "",
   "expected_marked": null,
+  "junction": false,
+  "roads_nearby": "",
   "radius_m": 40,
   "n_ways": 0,
-  "source": "osm_no_road"
+  "source": "osm_no_road",
+  "v": 2
  },
  "-33.88038,151.15086": {
   "highway": "residential",
@@ -642,9 +810,12 @@
   "lanes": "2",
   "lane_markings": "",
   "expected_marked": true,
+  "junction": false,
+  "roads_nearby": "Allen Street",
   "radius_m": 15,
   "n_ways": 5,
-  "source": "osm"
+  "source": "osm",
+  "v": 2
  },
  "-33.88722,151.15752": {
   "highway": "secondary",
@@ -652,9 +823,12 @@
   "lanes": "2",
   "lane_markings": "",
   "expected_marked": true,
+  "junction": false,
+  "roads_nearby": "Norton Street",
   "radius_m": 15,
   "n_ways": 8,
-  "source": "osm"
+  "source": "osm",
+  "v": 2
  },
  "-33.88713,151.15742": {
   "highway": "secondary",
@@ -662,9 +836,12 @@
   "lanes": "2",
   "lane_markings": "",
   "expected_marked": true,
+  "junction": false,
+  "roads_nearby": "Norton Street",
   "radius_m": 15,
   "n_ways": 7,
-  "source": "osm"
+  "source": "osm",
+  "v": 2
  },
  "-33.88694,151.15723": {
   "highway": "secondary",
@@ -672,9 +849,12 @@
   "lanes": "2",
   "lane_markings": "",
   "expected_marked": true,
+  "junction": false,
+  "roads_nearby": "Norton Street",
   "radius_m": 40,
   "n_ways": 10,
-  "source": "osm"
+  "source": "osm",
+  "v": 2
  },
  "-33.91769,151.16790": {
   "highway": "primary",
@@ -682,9 +862,12 @@
   "lanes": "4",
   "lane_markings": "",
   "expected_marked": true,
+  "junction": true,
+  "roads_nearby": "Henry Street; Railway Road",
   "radius_m": 15,
   "n_ways": 11,
-  "source": "osm"
+  "source": "osm",
+  "v": 2
  },
  "-33.91748,151.16756": {
   "highway": "primary",
@@ -692,9 +875,12 @@
   "lanes": "4",
   "lane_markings": "",
   "expected_marked": true,
+  "junction": false,
+  "roads_nearby": "Railway Road",
   "radius_m": 15,
   "n_ways": 3,
-  "source": "osm"
+  "source": "osm",
+  "v": 2
  },
  "-33.91742,151.16750": {
   "highway": "primary",
@@ -702,9 +888,12 @@
   "lanes": "4",
   "lane_markings": "",
   "expected_marked": true,
+  "junction": false,
+  "roads_nearby": "Railway Road",
   "radius_m": 15,
   "n_ways": 3,
-  "source": "osm"
+  "source": "osm",
+  "v": 2
  },
  "-33.91750,151.16763": {
   "highway": "primary",
@@ -722,9 +911,12 @@
   "lanes": "4",
   "lane_markings": "",
   "expected_marked": true,
+  "junction": false,
+  "roads_nearby": "Railway Road",
   "radius_m": 15,
   "n_ways": 3,
-  "source": "osm"
+  "source": "osm",
+  "v": 2
  },
  "-33.91441,151.16709": {
   "highway": "unclassified",
@@ -732,9 +924,12 @@
   "lanes": "2",
   "lane_markings": "",
   "expected_marked": true,
+  "junction": true,
+  "roads_nearby": "Burrows Avenue; George Street",
   "radius_m": 40,
   "n_ways": 33,
-  "source": "osm"
+  "source": "osm",
+  "v": 2
  },
  "-33.91739,151.16748": {
   "highway": "primary",
@@ -742,9 +937,12 @@
   "lanes": "4",
   "lane_markings": "",
   "expected_marked": true,
+  "junction": false,
+  "roads_nearby": "Railway Road",
   "radius_m": 15,
   "n_ways": 3,
-  "source": "osm"
+  "source": "osm",
+  "v": 2
  },
  "-33.91752,151.16759": {
   "highway": "primary",
@@ -752,9 +950,12 @@
   "lanes": "4",
   "lane_markings": "",
   "expected_marked": true,
+  "junction": false,
+  "roads_nearby": "Railway Road",
   "radius_m": 15,
   "n_ways": 3,
-  "source": "osm"
+  "source": "osm",
+  "v": 2
  },
  "-33.91752,151.16780": {
   "highway": "primary",
@@ -765,5 +966,135 @@
   "radius_m": 15,
   "n_ways": 6,
   "source": "osm"
+ },
+ "-33.92315,151.22007": {
+  "highway": "tertiary",
+  "name": "Borrodale Road",
+  "lanes": "",
+  "lane_markings": "",
+  "expected_marked": true,
+  "junction": true,
+  "roads_nearby": "Borrodale Road; Cottenham Avenue",
+  "radius_m": 15,
+  "n_ways": 4,
+  "source": "osm",
+  "v": 2
+ },
+ "-33.92239,151.22028": {
+  "highway": "tertiary",
+  "name": "Cottenham Avenue",
+  "lanes": "",
+  "lane_markings": "no",
+  "expected_marked": false,
+  "junction": false,
+  "roads_nearby": "Cottenham Avenue",
+  "radius_m": 15,
+  "n_ways": 2,
+  "source": "osm",
+  "v": 2
+ },
+ "-33.91314,151.22479": {
+  "highway": "primary",
+  "name": "Anzac Parade",
+  "lanes": "2",
+  "lane_markings": "",
+  "expected_marked": true,
+  "junction": true,
+  "roads_nearby": "Anzac Parade; Doncaster Avenue",
+  "radius_m": 15,
+  "n_ways": 14,
+  "source": "osm",
+  "v": 2
+ },
+ "-33.91991,151.22530": {
+  "highway": "tertiary",
+  "name": "Houston Road",
+  "lanes": "2",
+  "lane_markings": "",
+  "expected_marked": true,
+  "junction": false,
+  "roads_nearby": "Houston Road",
+  "radius_m": 40,
+  "n_ways": 11,
+  "source": "osm",
+  "v": 2
+ },
+ "-33.92287,151.22036": {
+  "highway": "tertiary",
+  "name": "Borrodale Road",
+  "lanes": "",
+  "lane_markings": "",
+  "expected_marked": true,
+  "junction": true,
+  "roads_nearby": "Borrodale Road; Cottenham Avenue",
+  "radius_m": 40,
+  "n_ways": 4,
+  "source": "osm",
+  "v": 2
+ },
+ "-33.82110,151.19395": {
+  "highway": "service",
+  "name": "",
+  "lanes": "",
+  "lane_markings": "",
+  "expected_marked": false,
+  "junction": false,
+  "roads_nearby": "",
+  "radius_m": 15,
+  "n_ways": 1,
+  "source": "osm",
+  "v": 2
+ },
+ "-33.81905,151.19357": {
+  "highway": "service",
+  "name": "",
+  "lanes": "",
+  "lane_markings": "",
+  "expected_marked": false,
+  "junction": false,
+  "roads_nearby": "",
+  "radius_m": 15,
+  "n_ways": 2,
+  "source": "osm",
+  "v": 2
+ },
+ "-33.82580,151.19515": {
+  "highway": "residential",
+  "name": "Lithgow Street",
+  "lanes": "",
+  "lane_markings": "no",
+  "expected_marked": false,
+  "junction": false,
+  "roads_nearby": "Lithgow Street",
+  "radius_m": 40,
+  "n_ways": 1,
+  "source": "osm",
+  "v": 2
+ },
+ "-33.91752,151.16779": {
+  "highway": "primary",
+  "name": "Railway Road",
+  "lanes": "4",
+  "lane_markings": "",
+  "expected_marked": true,
+  "junction": false,
+  "roads_nearby": "Railway Road",
+  "radius_m": 15,
+  "n_ways": 6,
+  "source": "osm",
+  "v": 2
+ },
+ "-33.92285,151.22019": {
+  "highway": "tertiary",
+  "name": "Cottenham Avenue",
+  "lanes": "",
+  "lane_markings": "no",
+  "expected_marked": false,
+  "junction": false,
+  "roads_nearby": "Cottenham Avenue",
+  "radius_m": 15,
+  "n_ways": 2,
+  "source": "osm",
+  "v": 2
  }
 }
