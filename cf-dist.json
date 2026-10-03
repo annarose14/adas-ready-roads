@@ -1,0 +1,19 @@
+{
+  "CallerReference": "adas-ready-roads-1791030894",
+  "Comment": "ADAS-Ready Roads dashboard",
+  "Enabled": true,
+  "DefaultRootObject": "index.html",
+  "Origins": {"Quantity": 1, "Items": [{
+      "Id": "s3-dashboard",
+      "DomainName": "adas-ready-roads-dashboard-272347298222.s3.ap-southeast-2.amazonaws.com",
+      "OriginAccessControlId": "",
+      "S3OriginConfig": {"OriginAccessIdentity": ""}}]},
+  "DefaultCacheBehavior": {
+      "TargetOriginId": "s3-dashboard",
+      "ViewerProtocolPolicy": "redirect-to-https",
+      "CachePolicyId": "658327ea-f89d-4fab-a63d-7e88639e58f6",
+      "Compress": true,
+      "AllowedMethods": {"Quantity": 2, "Items": ["GET", "HEAD"],
+                         "CachedMethods": {"Quantity": 2, "Items": ["GET", "HEAD"]}}},
+  "PriceClass": "PriceClass_All"
+}

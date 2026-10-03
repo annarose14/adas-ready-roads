@@ -1,0 +1,6 @@
+{"Version": "2012-10-17",
+ "Statement": [{"Sid": "AllowCloudFrontRead", "Effect": "Allow",
+   "Principal": {"Service": "cloudfront.amazonaws.com"},
+   "Action": "s3:GetObject",
+   "Resource": "arn:aws:s3:::adas-ready-roads-dashboard-272347298222/*",
+   "Condition": {"StringEquals": {"AWS:SourceArn": "arn:aws:cloudfront::272347298222:distribution/E2J1DVLIQD6AG4"}}}]}
