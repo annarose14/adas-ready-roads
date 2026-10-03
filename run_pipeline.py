@@ -1,15 +1,17 @@
-"""Run the frozen pipeline over data/<area>/*.jpg.
-Writes output_final/<area>/*.jpg (annotated) and output_final/results.csv,
+"""Run the frozen pipeline over <data_root>/<area>/*.jpg.
+Usage: python run_pipeline.py [data_root] [out_dir]      (defaults: data output_final)
+Writes <out_dir>/<area>/*.jpg (annotated) and <out_dir>/results.csv,
 merging Mapillary metadata (GPS, date, heading, sequence, photographer credit)."""
 import csv
+import sys
 from pathlib import Path
 
 import cv2 as cv
 
 from adas_pipeline import PIPELINE_VERSION, RoadAuditor, _result, quality_check, resize, to_record
 
-DATA = Path("data")
-OUT = Path("output_final")
+DATA = Path(sys.argv[1]) if len(sys.argv) > 1 else Path("data")
+OUT = Path(sys.argv[2]) if len(sys.argv) > 2 else Path("output_final")
 META_COLS = ["lon", "lat", "captured_at", "compass_angle", "sequence", "creator"]
 RESULT_COLS = ["quality", "status", "reason", "score", "continuity", "paint_contrast",
                "lane_sides", "road_frac", "drivable_frac", "surface_frac", "ego_top"]
@@ -56,7 +58,8 @@ def main():
         wr.writerow(["area", "image_id"] + META_COLS + RESULT_COLS + ["pipeline_version"])
         wr.writerows(rows)
 
-    print(f"OpenCV {cv.__version__} - {PIPELINE_VERSION} processed {len(rows)} images")
+    print(f"OpenCV {cv.__version__} - {PIPELINE_VERSION} ({auditor.engine} engine) "
+          f"processed {len(rows)} images from {DATA}/ -> {OUT}/")
     for k, v in sorted(counts.items()):
         print(f"  {k:10s} {v}")
 

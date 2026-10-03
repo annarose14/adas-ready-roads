@@ -1,0 +1,26 @@
+Input: output_test/results.csv   Output prefix: 'test_'
+Vehicle filter: kept 300/313 frames; dropped 2 slow sequences; 4 unknown-speed sequences kept
+Looking up OpenStreetMap context for 63 segments...
+  ...20/63
+  ...40/63
+  ...60/63
+Merged 63 segments into 36 locations
+  ...10/36 locations (fetch budget left: 60)
+  ...20/36 locations (fetch budget left: 60)
+  ...30/36 locations (fetch budget left: 56)
+
+Locations: 36   Fetch calls used: 12   OSM failed: 8   Junction locations: 12   Frames saved: 381 (81 fetched)
+
+Final verdicts:
+  human_review         12
+  adas_readable        11
+  at_risk              9
+  unmarked_by_design   3
+  not_readable         1
+
+Priority:
+  none     14
+  review   12
+  medium   10
+
+Wrote test_segments_agent.csv, test_segments_agent.geojson, test_review_queue.csv, test_agent_trace.jsonl, test_agent_frames.csv

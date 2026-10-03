@@ -1,4 +1,6 @@
 """ADAS-Ready Roads - location agent.
+Usage: python agent.py [results_csv] [output_prefix]
+       defaults: output_final/results.csv  ""      e.g.  python agent.py output_test/results.csv test_
 1. Vehicle-speed frames only (pedestrian/handheld sequences excluded).
 2. Segments (~100 m per Mapillary sequence) -> OpenStreetMap context for each.
 3. MERGE overlapping segments on the same named road (centres within MERGE_M) into one
@@ -6,18 +8,23 @@
 4. Per location: PERCEIVE (frozen OpenCV 5 pipeline results) -> ACT (fetch more vehicle
    frames when evidence is thin; heading filter; skip known images) -> RE-PERCEIVE ->
    DECIDE (junctions -> human review) -> PRIORITISE / ESCALATE.
-Every step is logged to agent_trace.jsonl; every frame used is saved to agent_frames.csv.
-Outputs: segments_agent.csv, segments_agent.geojson, review_queue.csv, agent_trace.jsonl,
-agent_frames.csv  (rows are locations; ids L0001...)"""
+Every step is logged to <prefix>agent_trace.jsonl; every frame used to <prefix>agent_frames.csv.
+Outputs: <prefix>segments_agent.csv/.geojson, <prefix>review_queue.csv,
+<prefix>agent_trace.jsonl, <prefix>agent_frames.csv  (rows are locations; ids L0001...)"""
 import csv
 import json
 import math
 import statistics as st
+import sys
 from collections import Counter
 from pathlib import Path
 
 import segments as seglib
 from agent_tools import fetch_frames, road_context
+
+RESULTS = Path(sys.argv[1]) if len(sys.argv) > 1 else Path("output_final/results.csv")
+PREFIX = sys.argv[2] if len(sys.argv) > 2 else ""
+seglib.RESULTS = RESULTS
 
 MERGE_M = 30                     # merge segments on the same road with centres this close
 FETCH_RADII = (0.0004, 0.0008)   # ~45 m, then ~90 m
@@ -27,11 +34,11 @@ MIN_CONFIDENT_FRAMES = 3         # fewer road frames -> try to fetch more
 HEADING_TOL = 35                 # degrees; keep frames along the road (either direction)
 MAJOR_ROADS = {"motorway", "trunk", "primary", "secondary"}
 
-OUT_CSV = Path("segments_agent.csv")
-OUT_GEO = Path("segments_agent.geojson")
-OUT_QUEUE = Path("review_queue.csv")
-OUT_TRACE = Path("agent_trace.jsonl")
-OUT_FRAMES = Path("agent_frames.csv")
+OUT_CSV = Path(f"{PREFIX}segments_agent.csv")
+OUT_GEO = Path(f"{PREFIX}segments_agent.geojson")
+OUT_QUEUE = Path(f"{PREFIX}review_queue.csv")
+OUT_TRACE = Path(f"{PREFIX}agent_trace.jsonl")
+OUT_FRAMES = Path(f"{PREFIX}agent_frames.csv")
 FRAME_COLS = ["segment_id", "image_id", "origin", "status", "reason", "paint_contrast",
               "lane_sides", "lat", "lon", "compass_angle", "captured_at", "sequence", "creator"]
 
@@ -154,9 +161,10 @@ def run_location(loc_id, main_seq, sequences, frames, known_ids, budget, ctx, co
 
 def main():
     frames, rep = seglib.load_vehicle_frames()
-    known_ids = {r["image_id"] for r in csv.DictReader(open(seglib.RESULTS))}
+    known_ids = {r["image_id"] for r in csv.DictReader(open(RESULTS))}
     raw = seglib.build_segments(frames)
 
+    print(f"Input: {RESULTS}   Output prefix: '{PREFIX}'")
     print(f"Vehicle filter: kept {rep['frames_kept']}/{rep['frames_in']} frames; dropped "
           f"{rep['seq_slow']} slow sequences; {rep['seq_unknown']} unknown-speed sequences kept")
     print(f"Looking up OpenStreetMap context for {len(raw)} segments...")
@@ -239,14 +247,6 @@ def main():
     print("\nPriority:")
     for p, n in Counter(s["priority"] for s in results).most_common():
         print(f"  {p:8s} {n}")
-    print("\nHuman-review reasons:")
-    for r, n in Counter(s["reason"] for s in results if s["final_verdict"] == "human_review").most_common():
-        print(f"  {n:3d}  {r}")
-    print("\nHIGH priority locations:")
-    for s in results:
-        if s["priority"] == "high":
-            print(f"  {s['segment_id']}  {s['road_name']} ({s['highway']})  lines {s['n_lines_found']}/"
-                  f"{s['n_road_frames']}  merged={s['merged_segments']}  junction={s['junction']}")
     print(f"\nWrote {OUT_CSV}, {OUT_GEO}, {OUT_QUEUE}, {OUT_TRACE}, {OUT_FRAMES}")
 
 
