@@ -42,3 +42,10 @@ OpenCV 5 new DNN engine segfaults on this model on Linux/ARM64 (AWS Lambda), rep
 at net.forward(); classic engine stable (~300 ms/frame, ARM64). Deployed with ENGINE_CLASSIC.
 compare_engines.py: classic vs new engine verdicts agree on 318/320 usable images (99.4%);
 2 differences are threshold edge cases. Reported evaluation numbers were made with the new engine.
+
+## AWS deployment (3 Oct)
+- Lambda (container image, ARM64/Graviton, 2048 MB, Sydney ap-southeast-2), ECR, Function URL (public, CORS)
+- IAM: function role = logs only (AWSLambdaBasicExecutionRole); URL invoke restricted via InvokedViaFunctionUrl
+- Mapillary token stored as function environment setting (not in code/git)
+- Verified: upload + mapillary_id both return identical verdict to local pipeline (ready, contrast 86.3)
+- Latency: cold start ~14.7 s round trip; warm ~2.7 s processing/photo at 2048 MB (Mac: ~0.5 s)
