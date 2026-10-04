@@ -15,6 +15,7 @@ without sending out survey vehicles.
 * **Live API (AWS Lambda Function URL):** send a `POST` with JSON `{"mapillary_id": "<id>"}` or
   `{"image_base64": "<jpeg>"}` to https://unft6yl7d6znbr6gvfvqbwzqmq0tidph.lambda-url.ap-southeast-2.on.aws/
 * Entry for the OpenCV AI Competition 2026 (powered by AWS).
+* **Technical report:** [docs/technical_report.pdf](docs/technical_report.pdf)
 
 ---
 
