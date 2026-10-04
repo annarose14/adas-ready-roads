@@ -1,0 +1,15 @@
+  ...50/400
+  ...100/400
+  ...150/400
+  ...200/400
+  ...250/400
+  ...300/400
+  ...350/400
+  ...400/400
+OpenCV 5.0.0 - v4-hybrid-2026-10-04 (classic engine) processed 400 images from data/ -> output_main_v4/
+  inferred   71
+  no_lanes   91
+  not_road   14
+  painted    121
+  review     23
+  unusable   80

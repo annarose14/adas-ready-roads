@@ -6,13 +6,14 @@
 <title>ADAS-Ready Roads</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <style>
-  :root { --ink:#1d2433; --muted:#5b6475; --line:#e3e6ec; --bg:#f6f7f9; --card:#fff; --accent:#2457d6; }
+  :root { --ink:#1d2433; --muted:#5b6475; --line:#e3e6ec; --bg:#f6f7f9; --card:#fff; --accent:#2457d6; --warn:#fff6e0; --warnline:#e0b84d; }
   * { box-sizing: border-box; }
   body { margin:0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color:var(--ink); background:var(--bg); }
   header { padding:16px 20px; background:var(--card); border-bottom:1px solid var(--line); }
   header h1 { margin:0; font-size:1.35rem; }
   header p { margin:4px 0 0; color:var(--muted); font-size:.95rem; }
-  main { display:grid; grid-template-columns: 2fr 1fr; gap:16px; padding:16px; height: calc(100vh - 140px); min-height:560px; }
+  .notice { margin:12px 16px 0; padding:10px 14px; background:var(--warn); border:1px solid var(--warnline); border-radius:10px; font-size:.9rem; }
+  main { display:grid; grid-template-columns: 2fr 1fr; gap:16px; padding:16px; height: calc(100vh - 190px); min-height:560px; }
   #map { border-radius:12px; border:1px solid var(--line); height:100%; }
   aside { overflow-y:auto; display:flex; flex-direction:column; gap:12px; }
   .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px; }
@@ -34,6 +35,8 @@
   #result { margin-top:10px; font-size:.9rem; }
   details pre { white-space:pre-wrap; font-size:.75rem; background:var(--bg); padding:8px; border-radius:8px; }
   .muted { color:var(--muted); font-size:.85rem; }
+  .perf { font-size:.88rem; margin:0; padding-left:18px; }
+  .perf li { margin:4px 0; }
   footer { padding:8px 20px 16px; color:var(--muted); font-size:.8rem; }
   @media (max-width: 900px) { main { grid-template-columns: 1fr; height:auto; } #map { height:420px; } }
 </style>
@@ -41,30 +44,41 @@
 <body>
 <header>
   <h1>ADAS-Ready Roads</h1>
-  <p>Can a camera-based lane-keeping system see the lane lines on Sydney's roads? Screening from crowd-sourced street imagery with OpenCV 5, an evidence-gathering agent, and OpenStreetMap context.</p>
+  <p>Can a camera-based lane-keeping system see painted lane lines on Sydney's roads? An agent screens crowd-sourced street imagery with OpenCV 5, asks a vision-language model on AWS when it needs a second look, checks OpenStreetMap, and routes uncertain places to people.</p>
 </header>
+<div class="notice" role="note"><strong>Research prototype.</strong> Verdicts are screening hints to prioritise human inspection, not safety certifications. See "Validated performance" for what has and has not been demonstrated.</div>
 
 <main>
-  <div id="map" role="region" aria-label="Map of assessed road segments"></div>
+  <div id="map" role="region" aria-label="Map of assessed locations"></div>
   <aside>
     <section class="card" aria-labelledby="sum-h">
-      <h2 id="sum-h">Road segments</h2>
+      <h2 id="sum-h">Assessed locations</h2>
       <div id="legend" class="legend"></div>
+      <p class="muted" id="count"></p>
+    </section>
+
+    <section class="card" aria-labelledby="perf-h">
+      <h2 id="perf-h">Validated performance (blind human labels)</h2>
+      <ul class="perf">
+        <li><strong>Clean test</strong> (4 never-used suburbs, 56 locations): where painted lines were visible, the system confirmed them in <strong>42 of 48</strong> decided locations (88%, 95% CI 75–94%) and routed 7 to human review.</li>
+        <li><strong>Missing markings: not yet demonstrated.</strong> Roads without lines are rare in crowd imagery (16 of 133 labelled locations); the system found 9 of those 16 (56%, very uncertain).</li>
+        <li>OpenCV-only versions scored at chance on unseen suburbs; OpenStreetMap alone was a poor guide (54%). Human self-agreement on paint <em>wear</em> was poor (kappa 0.14), so wear is not graded.</li>
+      </ul>
     </section>
 
     <section class="card" aria-labelledby="prio-h">
-      <h2 id="prio-h">Inspection priority</h2>
+      <h2 id="prio-h">Inspection queue</h2>
       <ul id="priority" class="prio"></ul>
     </section>
 
     <section class="card" aria-labelledby="det-h" aria-live="polite">
-      <h2 id="det-h">Segment details</h2>
-      <div id="details" class="muted">Select a segment on the map or in the priority list.</div>
+      <h2 id="det-h">Location details</h2>
+      <div id="details" class="muted">Select a location on the map or in the inspection queue.</div>
     </section>
 
     <section class="card" aria-labelledby="try-h">
       <h2 id="try-h">Try it live (AWS)</h2>
-      <p class="muted">Runs the OpenCV 5 pipeline on AWS Lambda for a single photo. The first request can take ~15 s while the server starts.</p>
+      <p class="muted">One photo: OpenCV 5 checks it is a usable road photo, then a vision-language model on Amazon Bedrock is asked whether painted lane lines are visible. The first request can take ~15 s while the server starts.</p>
       <label for="mly">Mapillary image ID</label>
       <input id="mly" type="text" inputmode="numeric" placeholder="e.g. 1043027243798906">
       <button id="go-mly" class="btn">Analyse Mapillary image</button>
@@ -78,18 +92,17 @@
 
 <footer>
   Street imagery: <a href="https://www.mapillary.com">Mapillary</a> contributors (CC BY-SA 4.0). Road data and map tiles: © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a> (ODbL).
-  Segmentation model: fastseg MobileV3Large (MIT). This is a screening tool to prioritise human inspection, not a safety certification.
+  Models: fastseg MobileV3Large (MIT, Cityscapes weights); Ultra-Fast-Lane-Detection (MIT, CULane weights); Amazon Nova Lite via Amazon Bedrock.
 </footer>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="config.js"></script>
 <script>
-const COLORS = { adas_readable:"#1a9850", at_risk:"#e08e0b", not_readable:"#d73027",
-                 human_review:"#7b3294", unmarked_by_design:"#8c8c8c" };
-const LABELS = { adas_readable:"ADAS-readable", at_risk:"At risk", not_readable:"Not readable",
-                 human_review:"Needs human review", unmarked_by_design:"Unmarked by design" };
-const FRAME_COLORS = { ready:"#1a9850", degraded:"#e08e0b", fail:"#d73027", no_lanes:"#555",
-                       not_road:"#8c8c8c", review:"#7b3294", unusable:"#8c8c8c" };
+const COLORS = { adas_readable:"#1a9850", not_readable:"#d73027", unmarked_by_design:"#8c8c8c",
+                 human_review:"#7b3294", at_risk:"#e08e0b" };
+const LABELS = { adas_readable:"Lane lines visible", not_readable:"No visible lines (should be marked)",
+                 unmarked_by_design:"Unmarked by design", human_review:"Needs human review",
+                 at_risk:"At risk" };
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const badge = (txt, color) => `<span class="badge" style="background:${color}">${esc(txt)}</span>`;
 
@@ -97,30 +110,31 @@ const map = L.map("map");
 L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
   attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
   maxZoom: 19 }).addTo(map);
-map.setView([-33.89, 151.19], 12);
-
+map.setView([-33.87, 151.1], 10);
 const layersById = {};
 
-function showSegment(p) {
+function showLocation(p) {
   const frames = (p.frame_ids || "").split(";").filter(Boolean);
   const links = frames.slice(0, 8).map(id =>
     `<a href="https://www.mapillary.com/app/?pKey=${esc(id)}" target="_blank" rel="noopener">${esc(id)}</a>`).join(", ");
+  const rate = p.opencv_painted_rate !== undefined && p.opencv_painted_rate !== "" ? Math.round(p.opencv_painted_rate * 100) + "%" : "–";
   document.getElementById("details").innerHTML = `
     <p>${badge(LABELS[p.final_verdict] || p.final_verdict, COLORS[p.final_verdict] || "#333")}
        ${p.priority === "high" ? badge("HIGH priority", "#b2182b") : ""}</p>
     <dl>
-      <dt>Road</dt><dd>${esc(p.road_name || "unknown")} ${p.highway ? "(" + esc(p.highway) + ")" : ""}</dd>
+      <dt>Road</dt><dd>${esc(p.road_name || "unnamed")} ${p.highway ? "(" + esc(p.highway) + ")" : ""}</dd>
       <dt>Reason</dt><dd>${esc(p.reason)}</dd>
-      <dt>Lane lines found</dt><dd>${esc(p.n_lines_found)} of ${esc(p.n_road_frames)} road frames (${Math.round((p.detect_rate || 0) * 100)}%)</dd>
-      <dt>Median contrast</dt><dd>${esc(p.median_contrast)}</dd>
+      <dt>VLM evidence</dt><dd>${esc(p.vlm_yes)} yes / ${esc(p.vlm_no)} no of ${esc(p.vlm_asked)} photos asked</dd>
+      <dt>OpenCV painted-lane rate</dt><dd>${rate} of ${esc(p.n_road_frames)} road photos</dd>
       <dt>Agent fetches</dt><dd>${esc(p.fetch_rounds)} extra evidence round(s)</dd>
-      <dt>Initial → final</dt><dd>${esc(p.initial_verdict)} → ${esc(p.final_verdict)}</dd>
-      <dt>Segment</dt><dd>${esc(p.segment_id)} · ${esc(p.length_m)} m</dd>
+      <dt>Merged</dt><dd>${esc(p.merged_segments)} segment(s), ${esc(p.n_sequences)} sequence(s)</dd>
+      <dt>Dataset</dt><dd>${esc(p.dataset)}</dd>
+      <dt>Location</dt><dd>${esc(p.segment_id)}</dd>
       <dt>Photos</dt><dd>${links || "–"}${frames.length > 8 ? " …" : ""}</dd>
     </dl>`;
 }
 
-function focusSegment(id) {
+function focusLocation(id) {
   const layer = layersById[id];
   if (!layer) return;
   if (layer.getBounds) map.fitBounds(layer.getBounds(), { maxZoom: 18, padding: [40, 40] });
@@ -137,23 +151,25 @@ fetch("segments_agent.geojson").then(r => r.json()).then(data => {
     onEachFeature: (f, l) => {
       layersById[f.properties.segment_id] = l;
       l.bindTooltip(`${LABELS[f.properties.final_verdict] || ""}${f.properties.road_name ? " · " + f.properties.road_name : ""}`);
-      l.on("click", () => showSegment(f.properties));
+      l.on("click", () => showLocation(f.properties));
     }
   }).addTo(map);
   map.fitBounds(layer.getBounds(), { padding: [20, 20] });
 
   const counts = {};
   data.features.forEach(f => counts[f.properties.final_verdict] = (counts[f.properties.final_verdict] || 0) + 1);
-  document.getElementById("legend").innerHTML = Object.keys(LABELS).map(k =>
+  document.getElementById("legend").innerHTML = ["adas_readable", "not_readable", "unmarked_by_design", "human_review"].map(k =>
     `<span><span class="sw" style="background:${COLORS[k]}"></span>${LABELS[k]}</span><span>${counts[k] || 0}</span>`).join("");
+  document.getElementById("count").textContent = `${data.features.length} locations across 15 Sydney suburbs.`;
 
-  const rank = { high: 0, review: 1 };
+  const rank = { high: 0, medium: 1, review: 2 };
   const prio = data.features.map(f => f.properties).filter(p => p.priority in rank)
     .sort((a, b) => rank[a.priority] - rank[b.priority]);
-  document.getElementById("priority").innerHTML = prio.length ? prio.slice(0, 15).map(p =>
-    `<li><button data-id="${esc(p.segment_id)}">${p.priority === "high" ? "🔴" : "🟣"} ${esc(p.road_name || p.segment_id)}</button>
+  const icon = { high: "🔴", medium: "🟠", review: "🟣" };
+  document.getElementById("priority").innerHTML = prio.length ? prio.slice(0, 20).map(p =>
+    `<li><button data-id="${esc(p.segment_id)}">${icon[p.priority]} ${esc(p.road_name || p.segment_id)}</button>
      <div class="muted">${esc(p.reason)}</div></li>`).join("") : "<li class='muted'>None</li>";
-  document.querySelectorAll("#priority button").forEach(b => b.addEventListener("click", () => focusSegment(b.dataset.id)));
+  document.querySelectorAll("#priority button").forEach(b => b.addEventListener("click", () => focusLocation(b.dataset.id)));
 }).catch(() => {
   document.getElementById("legend").textContent = "Could not load segments_agent.geojson";
 });
@@ -163,22 +179,25 @@ const resultEl = document.getElementById("result");
 function renderResult(j) {
   if (j.error) { resultEl.innerHTML = `<p>Error: ${esc(j.error)}</p>`; return; }
   const src = j.source || {};
+  const lv = { yes: ["Lane lines visible", "#1a9850"], no: ["No visible lane lines", "#d73027"],
+               unknown: ["Not assessed", "#8c8c8c"] }[j.lines_visible] || ["Not assessed", "#8c8c8c"];
   const credit = src.type === "mapillary"
     ? `<dt>Photo</dt><dd><a href="https://www.mapillary.com/app/?pKey=${esc(src.id)}" target="_blank" rel="noopener">${esc(src.id)}</a> by ${esc(src.creator)} (${esc(src.licence)})</dd>` : "";
   resultEl.innerHTML = `
-    <p>${badge(j.status, FRAME_COLORS[j.status] || "#333")} ${j.reason ? esc(j.reason) : ""}</p>
+    <p>${badge(lv[0], lv[1])}</p>
     <dl>
-      <dt>Paint contrast</dt><dd>${esc(j.paint_contrast || "–")}</dd>
-      <dt>Lane lines</dt><dd>${esc(j.lane_sides)} side(s) found</dd>
+      <dt>OpenCV 5 check</dt><dd>${esc(j.opencv_status)}${j.reason ? " (" + esc(j.reason) + ")" : ""} · lanes found by lane network: ${esc(j.lanes_detected)}/2</dd>
+      <dt>VLM answer</dt><dd>${esc(j.vlm_answer)} <span class="muted">(${esc(j.vlm_model)})</span></dd>
       <dt>Road in view</dt><dd>${j.drivable_frac !== "" ? Math.round(j.drivable_frac * 100) + "%" : "–"}</dd>
       ${credit}
-      <dt>Engine</dt><dd>OpenCV ${esc(j.opencv_version)} (${esc(j.dnn_engine)}) · ${esc(j.latency_ms)} ms</dd>
+      <dt>Timing</dt><dd>OpenCV ${esc(j.opencv_ms)} ms · total ${esc(j.latency_ms)} ms</dd>
     </dl>
+    <p class="muted">A single photo is only a hint; the map's location verdicts combine several photos and map data.</p>
     <details><summary>Raw response</summary><pre>${esc(JSON.stringify(j, null, 2))}</pre></details>`;
   if (src.lat && src.lon) {
     L.circleMarker([src.lat, src.lon], { radius: 9, color: "#000", weight: 2,
-      fillColor: FRAME_COLORS[j.status] || "#333", fillOpacity: 1 }).addTo(map)
-      .bindTooltip("Your analysed photo: " + j.status).openTooltip();
+      fillColor: lv[1], fillOpacity: 1 }).addTo(map)
+      .bindTooltip("Your analysed photo: " + lv[0]).openTooltip();
     map.setView([src.lat, src.lon], 17);
   }
 }
