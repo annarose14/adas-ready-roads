@@ -1,9 +1,9 @@
-"""FINAL test evaluation (run ONCE): system vs blind human labels on
-"Are painted lane lines visible?"  System mapping: adas_readable/at_risk -> yes,
-not_readable/unmarked_by_design -> no, human_review -> abstains (routed to a person).
+"""Evaluate a location agent run against blind human labels on "Are painted lane lines visible?"
+System mapping: adas_readable/at_risk -> yes, not_readable/unmarked_by_design -> no,
+human_review -> abstains (routed to a person).
 Baselines: majority answer; OpenStreetMap-only (expected_marked True -> yes, False -> no).
-Agreement is reported with a 95% Wilson confidence interval (small samples).
-Usage: python evaluate_binary.py [labels_csv] [system_csv]   (defaults: labels_final.csv final_segments_agent.csv)"""
+Agreement is reported with a 95% Wilson confidence interval.
+Usage: python evaluate_binary.py <labels_csv> <system_csv>     Output: eval_<system stem>.txt"""
 import csv
 import math
 import sys
@@ -53,7 +53,7 @@ def pct(k, n):
 sys_pred = {k: SYS[rows[k]["final_verdict"]] for k in keys}
 osm_pred = {k: {"True": "yes", "False": "no"}.get(rows[k]["expected_marked"], "unknown") for k in keys}
 
-out(f"FINAL TEST - fresh suburbs, frozen v4, blind labels ({len(keys)} locations)")
+out(f"EVALUATION: {system_f} vs {labels_f}  ({len(keys)} locations)")
 out("Question: are painted lane lines visible?")
 out("Human:  " + ", ".join(f"{k}={v}" for k, v in Counter(human[k] for k in keys).items()))
 out("System: " + ", ".join(f"{k}={v}" for k, v in Counter(sys_pred.values()).items()))
@@ -93,5 +93,6 @@ rev = [human[k] for k in keys if sys_pred[k] == "review"]
 if rev:
     out("Sent to human review -> human said: " + ", ".join(f"{k}={v}" for k, v in Counter(rev).items()))
 
-Path("eval_final.txt").write_text("\n".join(lines))
-print("\nSaved eval_final.txt")
+name = f"eval_{Path(system_f).stem}.txt"
+Path(name).write_text("\n".join(lines))
+print(f"\nSaved {name}")

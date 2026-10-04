@@ -96,3 +96,9 @@ Diagnosis (post-hoc, read-only, no re-scoring):
 Conclusion: detector work STOPPED. Lane-marking visibility from crowd-sourced imagery does not
 generalise with UFLD+paint verification or the hand-built v3c detector. Submission reports this as a
 rigorous negative result alongside the agent, OpenCV 5 and AWS engineering.
+
+## v5 (OpenCV-gated VLM tool, adaptive asking) on DEV (former test suburbs, 4 Oct)
+29 locations, labels = first-pass location labels mapped to yes/no (incl. inconsistent ones).
+Agreement 22/27 = 81% [63-92], kappa 0.54. Human yes found 17/19; human no 5/8.
+Baselines: always-yes 69%, OSM-only 76% (kappa 0.38). 2.3 VLM questions/location.
+v5 FROZEN for evaluation.
