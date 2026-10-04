@@ -12,8 +12,10 @@ without sending out survey vehicles.
 > safety certifications. The evaluation below states what has and has not been demonstrated.
 
 * **Live dashboard:** https://d1dzzj0gvxxl4o.cloudfront.net
-* **Live API (AWS Lambda Function URL):** send a `POST` with JSON `{"mapillary_id": "<id>"}` or
-  `{"image_base64": "<jpeg>"}` to https://unft6yl7d6znbr6gvfvqbwzqmq0tidph.lambda-url.ap-southeast-2.on.aws/
+* **Live API (AWS Lambda Function URL):** https://unft6yl7d6znbr6gvfvqbwzqmq0tidph.lambda-url.ap-southeast-2.on.aws/
+  Opening it in a browser shows how to use it. To analyse a photo, send a POST request, for example:
+  `curl -X POST https://unft6yl7d6znbr6gvfvqbwzqmq0tidph.lambda-url.ap-southeast-2.on.aws/ -H 'content-type: application/json' -d '{"mapillary_id": "1043027243798906"}'`
+  The easiest way to try it is the "Try it live" box on the dashboard.
 * Entry for the OpenCV AI Competition 2026 (powered by AWS).
 * **Technical report:** [docs/technical_report.pdf](docs/technical_report.pdf)
 

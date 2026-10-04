@@ -1,4 +1,5 @@
 """AWS Lambda handler - ADAS-Ready Roads v5 single-photo endpoint.
+GET  (a browser visit)                      -> short usage guide with a link to the dashboard
 POST JSON with ONE of:
   {"image_base64": "<base64 JPEG/PNG>"}     analyse an uploaded road photo
   {"mapillary_id": "1234567890"}            analyse a Mapillary image by id
@@ -20,13 +21,27 @@ from vlm_tool import MODEL_ID as VLM_MODEL, VLMBlocked, ask_image
 
 MAX_BYTES = 6 * 1024 * 1024
 ROAD_STATUSES = {"painted", "inferred", "no_lanes"}
+DASHBOARD_URL = "https://d1dzzj0gvxxl4o.cloudfront.net"
 AUDITOR = RoadAuditor()            # both OpenCV DNN models loaded once per container (classic engine)
+
+USAGE = {
+    "service": "ADAS-Ready Roads API (OpenCV AI Competition 2026)",
+    "what_it_does": "Checks one road photo with OpenCV 5, then asks a vision language model on "
+                    "Amazon Bedrock whether painted lane lines are visible.",
+    "try_it_in_a_browser": DASHBOARD_URL + " (use the 'Try it live' box)",
+    "how_to_call": "Send a POST request with JSON: {\"mapillary_id\": \"1043027243798906\"} "
+                   "or {\"image_base64\": \"<base64 JPEG>\"}",
+    "example_curl": "curl -X POST <this URL> -H 'content-type: application/json' "
+                    "-d '{\"mapillary_id\": \"1043027243798906\"}'",
+    "pipeline_version": PIPELINE_VERSION,
+    "agent_version": "v5",
+}
 
 
 def _response(code, payload):
     return {"statusCode": code,
             "headers": {"Content-Type": "application/json"},
-            "body": json.dumps(payload)}
+            "body": json.dumps(payload, indent=2)}
 
 
 def _mapillary_image(image_id):
@@ -50,6 +65,11 @@ def _mapillary_image(image_id):
 def handler(event, context):
     t0 = time.time()
     try:
+        method = ((event.get("requestContext") or {}).get("http") or {}).get("method", "POST") \
+            if isinstance(event, dict) else "POST"
+        if method == "GET":
+            return _response(200, USAGE)
+
         body = event.get("body", event) if isinstance(event, dict) else {}
         if isinstance(body, str):
             if event.get("isBase64Encoded"):
@@ -68,7 +88,7 @@ def handler(event, context):
                       "creator": (info.get("creator") or {}).get("username", ""),
                       "licence": "CC BY-SA 4.0"}
         else:
-            return _response(400, {"error": "send image_base64 or mapillary_id"})
+            return _response(400, {"error": "send image_base64 or mapillary_id", "help": USAGE})
         if len(raw) > MAX_BYTES:
             return _response(413, {"error": "image too large (max 6 MB)"})
 
