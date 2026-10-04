@@ -1,13 +1,28 @@
-  ...50/354
-  ...100/354
-  ...150/354
-  ...200/354
-  ...250/354
-  ...300/354
-  ...350/354
-OpenCV 5.0.0 - v4-hybrid-2026-10-04 (classic engine) processed 354 images from data_final/ -> output_final_test/
-  inferred   75
-  no_lanes   130
-  painted    68
-  review     2
-  unusable   79
+  ...50/1050
+  ...100/1050
+  ...150/1050
+  ...200/1050
+  ...250/1050
+  ...300/1050
+  ...350/1050
+  ...400/1050
+  ...450/1050
+  ...500/1050
+  ...550/1050
+  ...600/1050
+  ...650/1050
+  ...700/1050
+  ...750/1050
+  ...800/1050
+  ...850/1050
+  ...900/1050
+  ...950/1050
+  ...1000/1050
+  ...1050/1050
+OpenCV 5.0.0 - v4-hybrid-2026-10-04 (classic engine) processed 1050 images from data_final/ -> output_final_test/
+  inferred   246
+  no_lanes   282
+  not_road   34
+  painted    225
+  review     24
+  unusable   239
