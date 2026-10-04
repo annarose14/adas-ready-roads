@@ -1,0 +1,5 @@
+{"Version": "2012-10-17",
+ "Statement": [{"Sid": "NovaLiteOnly", "Effect": "Allow",
+   "Action": ["bedrock:InvokeModel"],
+   "Resource": ["arn:aws:bedrock:*:272347298222:inference-profile/apac.amazon.nova-lite-v1:0",
+                "arn:aws:bedrock:*::foundation-model/amazon.nova-lite-v1:0"]}]}

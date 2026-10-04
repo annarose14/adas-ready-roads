@@ -1,10 +1,11 @@
-"""AWS Lambda handler - ADAS-Ready Roads analysis endpoint.
+"""AWS Lambda handler - ADAS-Ready Roads v5 single-photo endpoint.
 POST JSON with ONE of:
   {"image_base64": "<base64 JPEG/PNG>"}     analyse an uploaded road photo
   {"mapillary_id": "1234567890"}            analyse a Mapillary image by id
-Returns the frozen OpenCV 5 pipeline verdict as JSON.
-CORS headers are added by the Lambda Function URL configuration (not here),
-to avoid duplicate Access-Control-Allow-Origin headers that browsers reject."""
+Pipeline: OpenCV 5 quality gate -> segmentation road gate / own-bonnet removal -> lane network +
+paint check (pipeline v4) -> ONLY for real road photos: Amazon Bedrock VLM asked
+"are painted lane lines visible?" -> lines_visible = yes / no / unknown.
+CORS headers are added by the Lambda Function URL configuration (not here)."""
 import base64
 import json
 import os
@@ -15,10 +16,11 @@ import numpy as np
 import requests
 
 from adas_pipeline import PIPELINE_VERSION, RoadAuditor, _result, quality_check, resize, to_record
+from vlm_tool import MODEL_ID as VLM_MODEL, VLMBlocked, ask_image
 
-MODEL_PATH = os.environ.get("MODEL_PATH", "models/fastseg_large_512x1024.onnx")
 MAX_BYTES = 6 * 1024 * 1024
-AUDITOR = RoadAuditor(MODEL_PATH)          # loaded once per container (engine from DNN_ENGINE, default classic)
+ROAD_STATUSES = {"painted", "inferred", "no_lanes"}
+AUDITOR = RoadAuditor()            # both OpenCV DNN models loaded once per container (classic engine)
 
 
 def _response(code, payload):
@@ -77,10 +79,25 @@ def handler(event, context):
         q = quality_check(img)
         res = AUDITOR.analyse(img) if q == "ok" else _result("unusable", reason=q)
         out = to_record(res)
-        out.update(quality=q, source=source, pipeline_version=PIPELINE_VERSION,
-                   opencv_version=cv.__version__, dnn_engine=AUDITOR.engine,
-                   latency_ms=int((time.time() - t0) * 1000))
-        print(json.dumps({"event": "analysed", "status": out["status"],
+        t_cv = int((time.time() - t0) * 1000)
+
+        vlm = "skipped (not a usable road photo)"
+        if res["status"] in ROAD_STATUSES:
+            try:
+                vlm = ask_image(img).lower()
+            except VLMBlocked as e:
+                vlm = "unavailable"
+                print(json.dumps({"event": "vlm_blocked", "error": str(e)}))
+            except Exception as e:  # never fail the whole request because of the VLM
+                vlm = "unavailable"
+                print(json.dumps({"event": "vlm_error", "error": str(e)[:200]}))
+        lines_visible = {"yes": "yes", "no": "no"}.get(vlm, "unknown")
+
+        out.update(quality=q, opencv_status=res["status"], vlm_answer=vlm, lines_visible=lines_visible,
+                   source=source, pipeline_version=PIPELINE_VERSION, agent_version="v5",
+                   vlm_model=VLM_MODEL, opencv_version=cv.__version__, dnn_engine=AUDITOR.engine,
+                   opencv_ms=t_cv, latency_ms=int((time.time() - t0) * 1000))
+        print(json.dumps({"event": "analysed", "status": res["status"], "vlm": vlm,
                           "source": source.get("type"), "latency_ms": out["latency_ms"]}))
         return _response(200, out)
     except ValueError as e:

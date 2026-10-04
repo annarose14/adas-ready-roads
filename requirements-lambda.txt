@@ -1,3 +1,4 @@
-opencv-python-headless>=5,<6
+opencv-python-headless>=5
 numpy>=2
 requests>=2.32
+boto3>=1.35
