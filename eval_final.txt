@@ -1,0 +1,17 @@
+FINAL TEST - fresh suburbs, frozen v4, blind labels (48 locations)
+Question: are painted lane lines visible?
+Human:  no=9, yes=39
+System: yes=16, no=23, review=9
+
+Confusion (rows = HUMAN, columns = SYSTEM)
+                 yes      no  review
+yes               13      19       7
+no                 3       4       2
+
+Coverage: system decided 39/48; human could judge 48/48
+SYSTEM agreement (decided & judgeable): 17/39 = 44%  [95% CI 29-59%]   kappa -0.01
+  lines visible (human yes): system found them  13/32 = 41%  [95% CI 26-58%]
+  no lines (human no):       system said none   4/7 = 57%  [95% CI 25-84%]
+Baseline 'always yes': 39/48 = 81%  [95% CI 68-90%]
+Baseline OpenStreetMap-only: 25/47 = 53%  [95% CI 39-67%]   kappa -0.06   (1 locations with unknown OSM type)
+Sent to human review -> human said: no=2, yes=7

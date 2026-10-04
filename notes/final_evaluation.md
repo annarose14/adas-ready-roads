@@ -84,3 +84,15 @@ Readable vs at-risk (marked only): 62% (kappa 0.14 = poor).
 Conclusion: paint-wear grading from crowd photos is NOT reliably judgeable even by a human;
 it cannot be used as an evaluation target. Final evaluation uses the reliable question:
 "are painted lane lines visible?" (yes / no / can't tell). v4 FROZEN for final test.
+
+## FINAL TEST (v4 frozen; 5 fresh suburbs: Chatswood, Hurstville, Hornsby, Parramatta CBD, Bankstown)
+48 locations, blind binary labels ("painted lane lines visible?"), sheets generated from the evaluated run.
+Human: yes=39, no=9. System decided 39/48.
+System agreement 17/39 = 44% [95% CI 29-59%], kappa -0.01 (chance). Baseline always-yes 81%; OSM-only 53%.
+Diagnosis (post-hoc, read-only, no re-scoring):
+- 13/19 human-yes/system-no misses: OSM minor-road rule + no evidence fetching on minor roads.
+- Fundamental: painted-lane rate overlaps between human yes/no (11/32 'yes' locations at 0.00 incl.
+  Marsden St 69 frames; 3/7 'no' at 0.37-0.64). No threshold beats the majority baseline (~64% best).
+Conclusion: detector work STOPPED. Lane-marking visibility from crowd-sourced imagery does not
+generalise with UFLD+paint verification or the hand-built v3c detector. Submission reports this as a
+rigorous negative result alongside the agent, OpenCV 5 and AWS engineering.
