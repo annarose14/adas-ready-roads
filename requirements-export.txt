@@ -1,0 +1,5 @@
+# Only needed ONCE to re-create the ONNX models (export_seg.py, export_ufld.py).
+torch
+fastseg
+geffnet
+onnx

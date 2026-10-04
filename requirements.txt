@@ -1,7 +1,6 @@
-fastseg==0.1.2
-geffnet==1.0.2
-numpy==2.5.3
-onnx==1.23.1
-opencv-python==5.0.0.93
-requests==2.34.2
-torch==2.14.1
+# Runtime (pipeline, agent, evaluation, dashboard data). Python 3.12+ recommended (developed on 3.13).
+opencv-python>=5.0      # OpenCV 5 (DNN classic engine used; see README "OpenCV 5 findings")
+numpy>=2
+requests>=2.32
+boto3>=1.35             # Amazon Bedrock (VLM tool)
+botocore[crt]           # needed for `aws login` credentials in Python
