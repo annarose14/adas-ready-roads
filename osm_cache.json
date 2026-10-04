@@ -3267,5 +3267,18 @@
   "n_ways": 13,
   "source": "osm",
   "v": 2
+ },
+ "-33.92064,151.03962": {
+  "highway": "trunk",
+  "name": "Stacey Street",
+  "lanes": "3",
+  "lane_markings": "",
+  "expected_marked": true,
+  "junction": false,
+  "roads_nearby": "Stacey Street",
+  "radius_m": 15,
+  "n_ways": 4,
+  "source": "osm",
+  "v": 2
  }
 }

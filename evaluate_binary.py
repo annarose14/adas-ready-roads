@@ -1,8 +1,9 @@
 """Evaluate a location agent run against blind human labels on "Are painted lane lines visible?"
 System mapping: adas_readable/at_risk -> yes, not_readable/unmarked_by_design -> no,
 human_review -> abstains (routed to a person).
-Baselines: majority answer; OpenStreetMap-only (expected_marked True -> yes, False -> no).
-Agreement is reported with a 95% Wilson confidence interval.
+Metrics (fixed BEFORE the clean Penrith/Sutherland test): agreement + Wilson 95% CI, Cohen's kappa,
+per-class recall, BALANCED accuracy (mean of yes-recall and no-recall; robust to class imbalance).
+Baselines: majority answer (balanced accuracy 50% by definition); OpenStreetMap-only.
 Usage: python evaluate_binary.py <labels_csv> <system_csv>     Output: eval_<system stem>.txt"""
 import csv
 import math
@@ -50,6 +51,15 @@ def pct(k, n):
     return f"{k}/{n} = {100 * k / n:.0f}%  [95% CI {lo:.0f}-{hi:.0f}%]"
 
 
+def balanced(ps):
+    rec = []
+    for c in ("yes", "no"):
+        sub = [(a, b) for a, b in ps if a == c]
+        if sub:
+            rec.append(sum(a == b for a, b in sub) / len(sub))
+    return 100 * sum(rec) / len(rec) if rec else float("nan")
+
+
 sys_pred = {k: SYS[rows[k]["final_verdict"]] for k in keys}
 osm_pred = {k: {"True": "yes", "False": "no"}.get(rows[k]["expected_marked"], "unknown") for k in keys}
 
@@ -74,6 +84,7 @@ if decided:
     ps = [(human[k], sys_pred[k]) for k in decided]
     agree = sum(a == b for a, b in ps)
     out(f"SYSTEM agreement (decided & judgeable): {pct(agree, len(ps))}   kappa {kappa(ps):.2f}")
+    out(f"SYSTEM balanced accuracy: {balanced(ps):.0f}%   (majority baseline = 50% by definition)")
     yes_h = [k for k in decided if human[k] == "yes"]
     no_h = [k for k in decided if human[k] == "no"]
     if yes_h:
@@ -82,13 +93,13 @@ if decided:
         out(f"  no lines (human no):       system said none   {pct(sum(sys_pred[k] == 'no' for k in no_h), len(no_h))}")
 if judge:
     maj, n_maj = Counter(human[k] for k in judge).most_common(1)[0]
-    out(f"Baseline 'always {maj}': {pct(n_maj, len(judge))}")
+    out(f"Baseline 'always {maj}': {pct(n_maj, len(judge))}   balanced accuracy 50%")
     osm = [k for k in judge if osm_pred[k] in ("yes", "no")]
     if osm:
         ps = [(human[k], osm_pred[k]) for k in osm]
         agree = sum(a == b for a, b in ps)
-        out(f"Baseline OpenStreetMap-only: {pct(agree, len(ps))}   kappa {kappa(ps):.2f}"
-            f"   ({len(judge) - len(osm)} locations with unknown OSM type)")
+        out(f"Baseline OpenStreetMap-only: {pct(agree, len(ps))}   kappa {kappa(ps):.2f}   "
+            f"balanced accuracy {balanced(ps):.0f}%   ({len(judge) - len(osm)} with unknown OSM type)")
 rev = [human[k] for k in keys if sys_pred[k] == "review"]
 if rev:
     out("Sent to human review -> human said: " + ", ".join(f"{k}={v}" for k, v in Counter(rev).items()))

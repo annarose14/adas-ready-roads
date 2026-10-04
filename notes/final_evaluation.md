@@ -102,3 +102,8 @@ rigorous negative result alongside the agent, OpenCV 5 and AWS engineering.
 Agreement 22/27 = 81% [63-92], kappa 0.54. Human yes found 17/19; human no 5/8.
 Baselines: always-yes 69%, OSM-only 76% (kappa 0.38). 2.3 VLM questions/location.
 v5 FROZEN for evaluation.
+
+## v5 on the 48-location final set (RE-USED; v5 design partly informed by its v4 diagnosis - disclosed)
+Agreement 35/45 = 78% [64-87], kappa 0.31; yes found 31/38, no found 4/7; 3 sent to review.
+Baselines: always-yes 81% (balanced 50%); OSM-only 54% (kappa -0.05). v4 on same set: 44%, kappa -0.01.
+Balanced accuracy added to the metric set BEFORE the clean Penrith/Sutherland test.
