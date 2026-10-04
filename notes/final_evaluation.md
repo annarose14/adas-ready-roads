@@ -107,3 +107,10 @@ v5 FROZEN for evaluation.
 Agreement 35/45 = 78% [64-87], kappa 0.31; yes found 31/38, no found 4/7; 3 sent to review.
 Baselines: always-yes 81% (balanced 50%); OSM-only 54% (kappa -0.05). v4 on same set: 44%, kappa -0.01.
 Balanced accuracy added to the metric set BEFORE the clean Penrith/Sutherland test.
+
+## Clean test B setup (Penrith, Sutherland, Liverpool, Ryde - never used before)
+Frozen v5. 7 of 56 OSM lookups failed twice (Overpass overload). In v5 OSM does not decide
+the lines-visible verdict (VLM evidence does); it affects priority, unmarked-vs-not-readable
+wording, map-conflict check and location grouping only. Disclosed; not re-run further.
+Consensus subset (54 locations both passes = yes): confirmed 42, review 6, wrongly 'no' 6
+-> 88% of decided; 11% routed to humans; 11% false 'no lines' (false alarms, not dangerous misses).
