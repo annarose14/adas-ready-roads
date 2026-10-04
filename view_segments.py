@@ -3,9 +3,9 @@ Usage:
   python view_segments.py                          HIGH-priority locations (annotated)
   python view_segments.py L0003 L0011              specific locations (annotated)
   python view_segments.py conflict                 all 'map conflict' locations (annotated)
-  python view_segments.py --prefix test_ --blind all --out blind_test
+  python view_segments.py --prefix final_ --blind all --out blind_final
         BLIND mode for labelling: raw photos only - no verdict, no reason, no overlays.
-Images are searched in data/*, data_test/* and data_agent/."""
+Images are searched in every data*/<area>/ folder and data_agent/."""
 import argparse
 import csv
 import math
@@ -42,8 +42,8 @@ elif args.ids == ["all"]:
 else:
     chosen = args.ids
 
-roots = [p for base in ("data", "data_test") if Path(base).exists()
-         for p in Path(base).iterdir() if p.is_dir()]
+roots = [p for base in Path(".").glob("data*") if base.is_dir() and base.name != "data_agent"
+         for p in base.iterdir() if p.is_dir()]
 
 
 def find_image(image_id):
@@ -92,7 +92,7 @@ for sid in chosen:
         title = f"{sid}  {seg['road_name'] or 'unnamed road'}   ({len(tiles)} photos)"
     else:
         title = (f"{sid}  {seg['road_name'] or '?'} ({seg['highway'] or '?'})  ->  {seg['final_verdict'].upper()}"
-                 f"  | lines found {seg['n_lines_found']}/{seg['n_road_frames']}  | {seg['reason']}")
+                 f"  | painted {seg['n_lines_found']}/{seg['n_road_frames']}  | {seg['reason']}")
     cv.putText(header, title[:140], (10, 40), cv.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0), 2)
     name = f"{sid}_{(seg['road_name'] or 'unknown').replace(' ', '_')}.jpg"
     cv.imwrite(str(OUT / name), cv.vconcat([header, sheet]))

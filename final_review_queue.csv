@@ -1,0 +1,2 @@
+segment_id,road_name,highway,final_verdict,priority,reason,frame_ids
+L0007,Anderson Street,tertiary,human_review,review,junction: lane geometry unreliable for automated screening,1097049611381975;812527327482824;1168614804281429;470985938786102;451830784130150;877972940762342;1715620742578593

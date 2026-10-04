@@ -1,0 +1,9 @@
+Input: output_final_test/results.csv   Output prefix: 'final_'
+Vehicle filter: kept 189/275 frames; dropped 3 slow sequences; 6 unknown-speed sequences kept
+  OSM ...20/25
+Merged 25 segments into 18 locations
+  ...10/18 locations (fetch budget left: 60)
+
+Locations: 18   Fetch calls: 2   OSM failed: 0   Junctions: 4
+Final verdicts: unmarked_by_design=8, adas_readable=6, not_readable=2, human_review=1, at_risk=1
+Wrote final_segments_agent.csv, final_segments_agent.geojson, final_review_queue.csv, final_agent_trace.jsonl, final_agent_frames.csv

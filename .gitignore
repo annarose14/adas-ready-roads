@@ -1,6 +1,7 @@
 .venv/
 data/
 data_test/
+data_final/
 data_agent/
 output/
 output_v1/
@@ -10,9 +11,12 @@ output_v3b/
 output_v3c/
 output_final/
 output_test/
+output_dev2_v4/
+output_final_test/
 review/
 review_segments/
 blind_test/
+blind_final/
 probe/
 seg_test/
 models/

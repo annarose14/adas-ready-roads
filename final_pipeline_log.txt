@@ -1,0 +1,13 @@
+  ...50/354
+  ...100/354
+  ...150/354
+  ...200/354
+  ...250/354
+  ...300/354
+  ...350/354
+OpenCV 5.0.0 - v4-hybrid-2026-10-04 (classic engine) processed 354 images from data_final/ -> output_final_test/
+  inferred   75
+  no_lanes   130
+  painted    68
+  review     2
+  unusable   79
