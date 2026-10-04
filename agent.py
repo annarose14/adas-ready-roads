@@ -1,16 +1,14 @@
-"""ADAS-Ready Roads - location agent.
+"""ADAS-Ready Roads - location agent (v4).
 Usage: python agent.py [results_csv] [output_prefix]
-       defaults: output_final/results.csv  ""      e.g.  python agent.py output_test/results.csv test_
-1. Vehicle-speed frames only (pedestrian/handheld sequences excluded).
-2. Segments (~100 m per Mapillary sequence) -> OpenStreetMap context for each.
-3. MERGE overlapping segments on the same named road (centres within MERGE_M) into one
-   LOCATION, so one place is never counted several times.
-4. Per location: PERCEIVE (frozen OpenCV 5 pipeline results) -> ACT (fetch more vehicle
-   frames when evidence is thin; heading filter; skip known images) -> RE-PERCEIVE ->
-   DECIDE (junctions -> human review) -> PRIORITISE / ESCALATE.
-Every step is logged to <prefix>agent_trace.jsonl; every frame used to <prefix>agent_frames.csv.
-Outputs: <prefix>segments_agent.csv/.geojson, <prefix>review_queue.csv,
-<prefix>agent_trace.jsonl, <prefix>agent_frames.csv  (rows are locations; ids L0001...)"""
+       defaults: output_final/results.csv  ""
+1. Vehicle-speed frames only. 2. Segments -> OpenStreetMap context. 3. Merge overlapping segments
+on the same named road into LOCATIONS. 4. Per location: PERCEIVE (v4 painted-lane evidence) ->
+ACT (fetch more vehicle frames when evidence is thin) -> RE-PERCEIVE -> DECIDE with OSM:
+  marked road (OSM)  : rate >= 0.45 readable | 0.20-0.45 at risk | < 0.20 NOT READABLE
+  minor road (OSM)   : rate >= 0.45 readable (lines present) | else unmarked by design
+  lane_markings=no   : rate >= 0.45 -> map conflict (review) | else unmarked by design
+  junction / unclear / insufficient -> human review
+Every step logged to <prefix>agent_trace.jsonl; every frame used to <prefix>agent_frames.csv."""
 import csv
 import json
 import math
@@ -26,12 +24,12 @@ RESULTS = Path(sys.argv[1]) if len(sys.argv) > 1 else Path("output_final/results
 PREFIX = sys.argv[2] if len(sys.argv) > 2 else ""
 seglib.RESULTS = RESULTS
 
-MERGE_M = 30                     # merge segments on the same road with centres this close
-FETCH_RADII = (0.0004, 0.0008)   # ~45 m, then ~90 m
-FETCH_LIMIT = 8                  # new frames per fetch round
-MAX_FETCH_CALLS = 60             # global budget (API politeness + runtime)
-MIN_CONFIDENT_FRAMES = 3         # fewer road frames -> try to fetch more
-HEADING_TOL = 35                 # degrees; keep frames along the road (either direction)
+MERGE_M = 30
+FETCH_RADII = (0.0004, 0.0008)
+FETCH_LIMIT = 8
+MAX_FETCH_CALLS = 60
+MIN_CONFIDENT_FRAMES = 3
+HEADING_TOL = 35
 MAJOR_ROADS = {"motorway", "trunk", "primary", "secondary"}
 
 OUT_CSV = Path(f"{PREFIX}segments_agent.csv")
@@ -39,8 +37,8 @@ OUT_GEO = Path(f"{PREFIX}segments_agent.geojson")
 OUT_QUEUE = Path(f"{PREFIX}review_queue.csv")
 OUT_TRACE = Path(f"{PREFIX}agent_trace.jsonl")
 OUT_FRAMES = Path(f"{PREFIX}agent_frames.csv")
-FRAME_COLS = ["segment_id", "image_id", "origin", "status", "reason", "paint_contrast",
-              "lane_sides", "lat", "lon", "compass_angle", "captured_at", "sequence", "creator"]
+FRAME_COLS = ["segment_id", "image_id", "origin", "status", "reason", "lanes_detected",
+              "lanes_painted", "lat", "lon", "compass_angle", "captured_at", "sequence", "creator"]
 
 
 def prep(f):
@@ -78,11 +76,11 @@ def run_location(loc_id, main_seq, sequences, frames, known_ids, budget, ctx, co
         f.setdefault("_origin", "original")
     s = seglib.summarise(loc_id, main_seq, frames)
     log("perceive", merged_segments=n_members, sequences=len(sequences), n_frames=s["n_frames"],
-        n_road_frames=s["n_road_frames"], detect_rate=s["detect_rate"],
-        median_contrast=s["median_contrast"], verdict=s["verdict"])
+        n_road_frames=s["n_road_frames"], painted_rate=s["detect_rate"], verdict=s["verdict"])
 
     expected = ctx.get("expected_marked")
     junction = bool(ctx.get("junction"))
+    tag_no = ctx.get("lane_markings", "") == "no"
     log("road_context", highway=ctx.get("highway", ""), name=ctx.get("name", ""),
         lanes=ctx.get("lanes", ""), lane_markings=ctx.get("lane_markings", ""),
         expected_marked=expected, junction=junction, roads_nearby=ctx.get("roads_nearby", ""),
@@ -90,7 +88,7 @@ def run_location(loc_id, main_seq, sequences, frames, known_ids, budget, ctx, co
 
     rounds = 0
     if expected is False:
-        log("skip_fetch", why="OSM says no lane markings expected; extra frames would not change the decision")
+        log("skip_fetch", why="OSM says this is a minor/unmarked road; extra frames would not change the decision")
     while (s["n_road_frames"] < MIN_CONFIDENT_FRAMES and expected is not False
            and rounds < len(FETCH_RADII) and budget["left"] > 0):
         heading = mean_heading(frames)
@@ -107,18 +105,22 @@ def run_location(loc_id, main_seq, sequences, frames, known_ids, budget, ctx, co
         budget["left"] -= 1
         log("act_fetch", round=rounds, radius_m=int(FETCH_RADII[rounds - 1] * 111000),
             api=status, fetched=len(new), kept_after_heading_filter=len(kept),
-            before={"verdict": before[0], "road_frames": before[1], "detect_rate": before[2]},
+            before={"verdict": before[0], "road_frames": before[1], "painted_rate": before[2]},
             after={"verdict": s["verdict"], "road_frames": s["n_road_frames"],
-                   "detect_rate": s["detect_rate"]})
+                   "painted_rate": s["detect_rate"]})
         if not new:
             break
 
     hw = ctx.get("highway", "")
+    rate = s["detect_rate"]
+    readable = s["n_road_frames"] >= seglib.MIN_FRAMES and rate >= seglib.READABLE_RATE
     if expected is False:
-        if s["n_road_frames"] >= seglib.MIN_FRAMES and s["detect_rate"] >= seglib.READABLE_RATE:
-            final, reason = "human_review", "map conflict: camera finds lines but OSM says unmarked"
+        if tag_no and readable:
+            final, reason = "human_review", "map conflict: painted lanes seen but OSM says lane_markings=no"
+        elif readable:
+            final, reason = "adas_readable", "painted lane lines seen consistently (minor road in OSM)"
         else:
-            final, reason = "unmarked_by_design", "OSM: no lane markings expected; camera agrees"
+            final, reason = "unmarked_by_design", "minor/unmarked road in OSM; no consistent painted lanes"
     elif s["verdict"] == "insufficient_evidence":
         final, reason = "human_review", "insufficient evidence even after fetching more frames"
     elif s["n_review"] > s["n_road_frames"]:
@@ -126,12 +128,12 @@ def run_location(loc_id, main_seq, sequences, frames, known_ids, budget, ctx, co
     elif junction and s["verdict"] in ("not_readable", "at_risk"):
         final, reason = "human_review", "junction: lane geometry unreliable for automated screening"
     elif expected is None and s["verdict"] == "not_readable":
-        final, reason = "human_review", "lanes not found and road type unknown in OSM"
+        final, reason = "human_review", "no painted lanes seen and road type unknown in OSM"
     else:
         final = s["verdict"]
-        reason = {"adas_readable": "lane lines found consistently with good contrast",
-                  "at_risk": "lane lines found inconsistently or faint",
-                  "not_readable": "lane lines rarely found on a road expected to be marked"}[final]
+        reason = {"adas_readable": "painted lane lines seen consistently (lane network + paint check)",
+                  "at_risk": "painted lane lines seen only in some frames",
+                  "not_readable": "painted lane lines rarely seen on a road expected to be marked"}[final]
 
     if final == "not_readable" and hw in MAJOR_ROADS:
         priority = "high"
@@ -151,8 +153,8 @@ def run_location(loc_id, main_seq, sequences, frames, known_ids, budget, ctx, co
              fetch_rounds=rounds, _coords=coords)
     frame_rows = [{"segment_id": loc_id, "image_id": f.get("image_id", ""),
                    "origin": f.get("_origin", "original"), "status": f.get("status", ""),
-                   "reason": f.get("reason", ""), "paint_contrast": f.get("paint_contrast", ""),
-                   "lane_sides": f.get("lane_sides", ""), "lat": f.get("lat", ""),
+                   "reason": f.get("reason", ""), "lanes_detected": f.get("lanes_detected", ""),
+                   "lanes_painted": f.get("lanes_painted", ""), "lat": f.get("lat", ""),
                    "lon": f.get("lon", ""), "compass_angle": f.get("compass_angle", ""),
                    "captured_at": f.get("captured_at", ""), "sequence": f.get("sequence", ""),
                    "creator": f.get("creator", "")} for f in frames]
@@ -167,7 +169,6 @@ def main():
     print(f"Input: {RESULTS}   Output prefix: '{PREFIX}'")
     print(f"Vehicle filter: kept {rep['frames_kept']}/{rep['frames_in']} frames; dropped "
           f"{rep['seq_slow']} slow sequences; {rep['seq_unknown']} unknown-speed sequences kept")
-    print(f"Looking up OpenStreetMap context for {len(raw)} segments...")
     raws = []
     for i, (seq, fs) in enumerate(raw, 1):
         lat = st.mean(f["_lat"] for f in fs)
@@ -175,7 +176,7 @@ def main():
         raws.append({"seq": seq, "frames": fs, "lat": lat, "lon": lon, "ctx": road_context(lat, lon),
                      "coords": [[f["_lon"], f["_lat"]] for f in fs]})
         if i % 20 == 0:
-            print(f"  ...{i}/{len(raw)}")
+            print(f"  OSM ...{i}/{len(raw)}")
 
     clusters = []
     for r in sorted(raws, key=lambda r: -len(r["frames"])):
@@ -223,7 +224,7 @@ def main():
         w.writeheader()
         w.writerows([s for s in results if s["priority"] in ("high", "review")])
     with open(OUT_FRAMES, "w", newline="") as f:
-        w = csv.DictWriter(f, fieldnames=FRAME_COLS)
+        w = csv.DictWriter(f, fieldnames=FRAME_COLS, extrasaction="ignore")
         w.writeheader()
         w.writerows(all_frames)
     with open(OUT_TRACE, "w") as f:
@@ -238,16 +239,11 @@ def main():
     OUT_GEO.write_text(json.dumps({"type": "FeatureCollection", "features": features}))
 
     osm_errors = sum(str(s["osm_source"]).startswith("osm_error") for s in results)
-    print(f"\nLocations: {len(results)}   Fetch calls used: {MAX_FETCH_CALLS - budget['left']}   "
-          f"OSM failed: {osm_errors}   Junction locations: {sum(s['junction'] for s in results)}   "
-          f"Frames saved: {len(all_frames)} ({sum(f['origin'] == 'fetched' for f in all_frames)} fetched)")
-    print("\nFinal verdicts:")
-    for v, n in Counter(s["final_verdict"] for s in results).most_common():
-        print(f"  {v:20s} {n}")
-    print("\nPriority:")
-    for p, n in Counter(s["priority"] for s in results).most_common():
-        print(f"  {p:8s} {n}")
-    print(f"\nWrote {OUT_CSV}, {OUT_GEO}, {OUT_QUEUE}, {OUT_TRACE}, {OUT_FRAMES}")
+    print(f"\nLocations: {len(results)}   Fetch calls: {MAX_FETCH_CALLS - budget['left']}   "
+          f"OSM failed: {osm_errors}   Junctions: {sum(s['junction'] for s in results)}")
+    print("Final verdicts: " + ", ".join(f"{v}={n}" for v, n in
+                                         Counter(s["final_verdict"] for s in results).most_common()))
+    print(f"Wrote {OUT_CSV}, {OUT_GEO}, {OUT_QUEUE}, {OUT_TRACE}, {OUT_FRAMES}")
 
 
 if __name__ == "__main__":

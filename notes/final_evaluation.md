@@ -73,3 +73,14 @@ Interpretation: safeguards (junction review, merging, vehicle filter) generalise
 hand-built frame-level lane finder does NOT generalise to unseen suburbs.
 Caveats: small n; labels made late at night (labels NOT changed after seeing results).
 This TEST set is now USED.
+
+## v4 hybrid (UFLD lane network + paint verification), dev2 = former test suburbs (4 Oct)
+Location IDs drifted between runs (OSM merges) -> labels re-mapped by shared photos (remap_labels.py).
+v4 on dev2: exact 38%, marked-vs-unmarked 76%. v3c on same: exact 42%, marked-vs-unmarked ~88%.
+
+## Label reliability (intra-rater, same 36 locations, two blind passes, shuffled)
+All labels: 53% (kappa 0.24). Marked vs unmarked: 78% (kappa 0.38).
+Readable vs at-risk (marked only): 62% (kappa 0.14 = poor).
+Conclusion: paint-wear grading from crowd photos is NOT reliably judgeable even by a human;
+it cannot be used as an evaluation target. Final evaluation uses the reliable question:
+"are painted lane lines visible?" (yes / no / can't tell). v4 FROZEN for final test.

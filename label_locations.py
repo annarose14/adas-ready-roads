@@ -1,18 +1,26 @@
-"""Blind location labelling: shows each blind contact sheet, press one key per location.
-Saves to location_labels_test.csv (re-run to continue where you left off).
-Keys: r=readable  a=at risk  n=not readable  u=unmarked by design  c=can't tell  b=back  q=quit"""
+"""Blind location labelling: shows each contact sheet, press one key per location.
+Usage: python label_locations.py [sheets_dir] [out_csv] [--shuffle]
+       defaults: blind_test location_labels_test.csv
+Keys: r=readable  a=at risk  n=not readable  u=unmarked by design  c=can't tell  b=back  q=quit
+Re-run to continue where you left off."""
 import csv
+import random
+import sys
 from pathlib import Path
 
 import cv2 as cv
 
-SHEETS = Path("blind_test")
-OUT = Path("location_labels_test.csv")
+args = [a for a in sys.argv[1:] if not a.startswith("--")]
+SHEETS = Path(args[0]) if len(args) > 0 else Path("blind_test")
+OUT = Path(args[1]) if len(args) > 1 else Path("location_labels_test.csv")
+SHUFFLE = "--shuffle" in sys.argv
 KEYS = {ord("r"): "readable", ord("a"): "at_risk", ord("n"): "not_readable",
         ord("u"): "unmarked", ord("c"): "cant_tell"}
 MAX_W, MAX_H = 1500, 900
 
 sheets = sorted(SHEETS.glob("*.jpg"))
+if SHUFFLE:
+    random.Random(2026).shuffle(sheets)
 labels = {}
 if OUT.exists():
     labels = {r["location_id"]: r["label"] for r in csv.DictReader(open(OUT))}

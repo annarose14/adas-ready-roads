@@ -1,6 +1,7 @@
-"""One-time evaluation of the location agent against blind human labels (fresh TEST suburbs).
+"""Evaluate the location agent against blind human location labels.
 Usage: python evaluate_locations.py [labels_csv] [system_csv]
-       defaults: location_labels_test.csv test_segments_agent.csv"""
+       defaults: location_labels_test.csv test_segments_agent.csv
+Output file: eval_<system_csv stem>.txt  (never overwrites results for other systems)"""
 import csv
 import sys
 from collections import Counter
@@ -22,7 +23,7 @@ def out(s=""):
     print(s)
     lines.append(s)
 
-out(f"Location-level TEST evaluation  ({len(pairs)} locations, fresh suburbs, blind labels)")
+out(f"Location-level evaluation: {system_file} vs {labels_file}  ({len(pairs)} locations)")
 out("Human labels: " + ", ".join(f"{k}={v}" for k, v in Counter(h for h, _ in pairs).items()))
 out("System:       " + ", ".join(f"{k}={v}" for k, v in Counter(s for _, s in pairs).items()))
 out()
@@ -35,32 +36,30 @@ for h in HUMAN:
 out()
 
 decided = [(h, s) for h, s in pairs if s != "review"]
-out(f"Coverage: system decided {len(decided)}/{len(pairs)} locations "
-    f"({100 * len(decided) / len(pairs):.0f}%), sent {len(pairs) - len(decided)} to human review")
-
+out(f"Coverage: system decided {len(decided)}/{len(pairs)} ({100 * len(decided) / len(pairs):.0f}%)")
 judgeable = [(h, s) for h, s in decided if h != "cant_tell"]
 if judgeable:
     exact = sum(h == s for h, s in judgeable)
     common = Counter(h for h, _ in judgeable).most_common(1)[0]
-    out(f"Agreement on decided + human-judgeable: {exact}/{len(judgeable)} = {100 * exact / len(judgeable):.0f}%"
-        f"   (baseline 'always {common[0]}': {common[1]}/{len(judgeable)} = {100 * common[1] / len(judgeable):.0f}%)")
-
+    out(f"Exact agreement (4 classes): {exact}/{len(judgeable)} = {100 * exact / len(judgeable):.0f}%"
+        f"   (baseline 'always {common[0]}': {100 * common[1] / len(judgeable):.0f}%)")
+    marked = lambda x: x in ("readable", "at_risk", "not_readable")
+    mk = sum(marked(h) == marked(s) for h, s in judgeable)
+    out(f"MARKED vs UNMARKED agreement:  {mk}/{len(judgeable)} = {100 * mk / len(judgeable):.0f}%")
 bad = [(h, s) for h, s in judgeable if h in ("at_risk", "not_readable")]
 if bad:
-    missed = sum(s == "readable" for _, s in bad)
-    caught = sum(s in ("at_risk", "not_readable") for _, s in bad)
-    out(f"Problem roads (human at_risk/not_readable) that the system decided on: {len(bad)}")
-    out(f"  caught as at_risk/not_readable: {caught}   DANGEROUS (called readable): {missed}")
+    out(f"Problem roads decided: {len(bad)} -> caught {sum(s in ('at_risk', 'not_readable') for _, s in bad)}, "
+        f"DANGEROUS (called readable) {sum(s == 'readable' for _, s in bad)}")
 good = [(h, s) for h, s in judgeable if h == "readable"]
 if good:
-    fa = sum(s in ("at_risk", "not_readable") for _, s in good)
-    out(f"Readable roads (human): {len(good)}   false alarms (flagged at_risk/not_readable): {fa}")
+    out(f"Readable roads: {len(good)} -> false alarms {sum(s in ('at_risk', 'not_readable') for _, s in good)}")
 um = [(h, s) for h, s in pairs if h == "unmarked"]
 if um:
-    out(f"Unmarked-by-design roads (human): {len(um)}   system agreed: {sum(s == 'unmarked' for _, s in um)}")
+    out(f"Unmarked roads: {len(um)} -> system said unmarked {sum(s == 'unmarked' for _, s in um)}")
 rev = [h for h, s in pairs if s == "review"]
 if rev:
     out("Sent to review -> human said: " + ", ".join(f"{k}={v}" for k, v in Counter(rev).items()))
 
-Path("eval_locations_test.txt").write_text("\n".join(lines))
-print("\nSaved eval_locations_test.txt")
+name = f"eval_{Path(system_file).stem}.txt"
+Path(name).write_text("\n".join(lines))
+print(f"\nSaved {name}")

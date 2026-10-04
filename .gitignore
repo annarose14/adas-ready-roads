@@ -13,6 +13,7 @@ output_test/
 review/
 review_segments/
 blind_test/
+probe/
 seg_test/
 models/
 __pycache__/

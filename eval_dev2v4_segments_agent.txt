@@ -1,0 +1,17 @@
+Location-level evaluation: dev2v4_segments_agent.csv vs dev2v4_location_labels.csv  (29 locations)
+Human labels: readable=11, unmarked=9, at_risk=9
+System:       readable=8, unmarked=6, at_risk=4, review=8, not_readable=3
+
+Confusion matrix (rows = HUMAN, columns = SYSTEM)
+                   readable      at_risk not_readable     unmarked       review
+readable                  4            2            3            0            2
+at_risk                   3            0            0            2            4
+unmarked                  1            2            0            4            2
+
+Coverage: system decided 21/29 (72%)
+Exact agreement (4 classes): 8/21 = 38%   (baseline 'always readable': 43%)
+MARKED vs UNMARKED agreement:  16/21 = 76%
+Problem roads decided: 5 -> caught 0, DANGEROUS (called readable) 3
+Readable roads: 9 -> false alarms 5
+Unmarked roads: 9 -> system said unmarked 4
+Sent to review -> human said: at_risk=4, unmarked=2, readable=2
