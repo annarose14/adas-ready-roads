@@ -1,0 +1,185 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000" font-family="Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#374151"/>
+    </marker>
+  </defs>
+  <rect width="1600" height="1000" fill="#ffffff"/>
+
+  <!-- Title -->
+  <text x="40" y="55" font-size="30" font-weight="700" fill="#111827">ADAS-Ready Roads: system architecture</text>
+  <text x="40" y="84" font-size="16" fill="#4b5563">OpenCV 5 checks every photo first, a vision language model gives a second look when needed, and people handle the hard cases.</text>
+
+  <!-- ===== A. Data sources ===== -->
+  <rect x="40" y="110" width="250" height="560" rx="14" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.5"/>
+  <text x="60" y="142" font-size="18" font-weight="700" fill="#374151">Data sources</text>
+
+  <rect x="60" y="160" width="210" height="150" rx="10" fill="#ffffff" stroke="#6b7280"/>
+  <text x="75" y="190" font-size="16" font-weight="700" fill="#111827">Mapillary</text>
+  <text x="75" y="214" font-size="13" fill="#374151">street level photos</text>
+  <text x="75" y="236" font-size="13" fill="#374151">crowdsourced, CC BY-SA 4.0</text>
+  <text x="75" y="258" font-size="13" fill="#374151">photographer credit kept</text>
+  <text x="75" y="280" font-size="13" fill="#374151">vehicle speed sequences only</text>
+
+  <rect x="60" y="340" width="210" height="150" rx="10" fill="#ffffff" stroke="#6b7280"/>
+  <text x="75" y="370" font-size="16" font-weight="700" fill="#111827">OpenStreetMap</text>
+  <text x="75" y="394" font-size="13" fill="#374151">road class</text>
+  <text x="75" y="416" font-size="13" fill="#374151">lane_markings tag</text>
+  <text x="75" y="438" font-size="13" fill="#374151">nearby roads (junctions)</text>
+  <text x="75" y="460" font-size="13" fill="#374151">ODbL licence</text>
+
+  <rect x="60" y="520" width="210" height="130" rx="10" fill="#ffffff" stroke="#6b7280" stroke-dasharray="5,4"/>
+  <text x="75" y="550" font-size="16" font-weight="700" fill="#111827">Blind human labels</text>
+  <text x="75" y="574" font-size="13" fill="#374151">evaluation only:</text>
+  <text x="75" y="596" font-size="13" fill="#374151">"are painted lane lines</text>
+  <text x="75" y="618" font-size="13" fill="#374151">visible?" per location</text>
+
+  <!-- ===== B. OpenCV 5 pipeline ===== -->
+  <rect x="320" y="110" width="380" height="560" rx="14" fill="#e8f1fd" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="340" y="142" font-size="18" font-weight="700" fill="#1e3a8a">OpenCV 5 pipeline (every photo)</text>
+
+  <rect x="340" y="160" width="340" height="80" rx="10" fill="#ffffff" stroke="#3b82f6"/>
+  <text x="355" y="187" font-size="15" font-weight="700" fill="#111827">1  Quality gate</text>
+  <text x="355" y="210" font-size="13" fill="#374151">dark, blurry or panorama → unusable</text>
+
+  <rect x="340" y="260" width="340" height="80" rx="10" fill="#ffffff" stroke="#3b82f6"/>
+  <text x="355" y="285" font-size="15" font-weight="700" fill="#111827">2  Semantic segmentation</text>
+  <text x="355" y="307" font-size="13" fill="#374151">fastseg via OpenCV DNN (classic engine)</text>
+  <text x="355" y="328" font-size="13" fill="#374151">road gate, own bonnet, vehicles, kerbs</text>
+
+  <rect x="340" y="360" width="340" height="80" rx="10" fill="#ffffff" stroke="#3b82f6"/>
+  <text x="355" y="385" font-size="15" font-weight="700" fill="#111827">3  Lane network</text>
+  <text x="355" y="407" font-size="13" fill="#374151">Ultra-Fast-Lane-Detection via OpenCV DNN</text>
+  <text x="355" y="428" font-size="13" fill="#374151">where the ego lane lines should be</text>
+
+  <rect x="340" y="460" width="340" height="80" rx="10" fill="#ffffff" stroke="#3b82f6"/>
+  <text x="355" y="485" font-size="15" font-weight="700" fill="#111827">4  Paint check</text>
+  <text x="355" y="507" font-size="13" fill="#374151">top hat filter at predicted lane points</text>
+  <text x="355" y="528" font-size="13" fill="#374151">ignores points near kerbs and cars</text>
+
+  <rect x="340" y="560" width="340" height="90" rx="10" fill="#dbeafe" stroke="#3b82f6"/>
+  <text x="355" y="587" font-size="15" font-weight="700" fill="#111827">Photo status</text>
+  <text x="355" y="610" font-size="13" fill="#374151">painted · inferred · no lanes</text>
+  <text x="355" y="632" font-size="13" fill="#374151">not road · review · unusable</text>
+
+  <line x1="510" y1="240" x2="510" y2="258" stroke="#374151" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="510" y1="340" x2="510" y2="358" stroke="#374151" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="510" y1="440" x2="510" y2="458" stroke="#374151" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="510" y1="540" x2="510" y2="558" stroke="#374151" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- ===== C. Agent ===== -->
+  <rect x="730" y="110" width="470" height="560" rx="14" fill="#f3e8ff" stroke="#8b5cf6" stroke-width="1.5"/>
+  <text x="750" y="142" font-size="18" font-weight="700" fill="#4c1d95">Agent (per location)</text>
+
+  <rect x="750" y="160" width="430" height="72" rx="10" fill="#ffffff" stroke="#8b5cf6"/>
+  <text x="765" y="184" font-size="14" font-weight="700" fill="#111827">PERCEIVE <tspan font-weight="400" fill="#374151">photo statuses from OpenCV 5</tspan></text>
+  <text x="765" y="206" font-size="13" fill="#374151">merge overlapping segments on the same road</text>
+  <text x="765" y="224" font-size="13" fill="#374151">into one location</text>
+
+  <rect x="750" y="242" width="430" height="72" rx="10" fill="#ffffff" stroke="#8b5cf6"/>
+  <text x="765" y="266" font-size="14" font-weight="700" fill="#111827">CONTEXT <tspan font-weight="400" fill="#374151">Tool B: road_context (OpenStreetMap)</tspan></text>
+  <text x="765" y="290" font-size="13" fill="#374151">should this road be marked? is it a junction?</text>
+
+  <rect x="750" y="324" width="430" height="72" rx="10" fill="#ffffff" stroke="#8b5cf6"/>
+  <text x="765" y="348" font-size="14" font-weight="700" fill="#111827">ACT <tspan font-weight="400" fill="#374151">Tool A: fetch_frames (Mapillary)</tspan></text>
+  <text x="765" y="372" font-size="13" fill="#374151">fetch more photos when fewer than 3 usable road photos</text>
+
+  <rect x="750" y="406" width="430" height="72" rx="10" fill="#ffffff" stroke="#8b5cf6"/>
+  <text x="765" y="428" font-size="14" font-weight="700" fill="#111827">ASK <tspan font-weight="400" fill="#374151">Tool C: vision language model (Bedrock)</tspan></text>
+  <text x="765" y="449" font-size="13" fill="#374151">on the best photos approved by OpenCV</text>
+  <text x="765" y="468" font-size="13" fill="#374151">ask 2, stop if they agree, otherwise up to 6</text>
+
+  <rect x="750" y="488" width="430" height="72" rx="10" fill="#ffffff" stroke="#8b5cf6"/>
+  <text x="765" y="510" font-size="14" font-weight="700" fill="#111827">DECIDE <tspan font-weight="400" fill="#374151">camera evidence + OpenStreetMap</tspan></text>
+  <text x="765" y="531" font-size="13" fill="#374151">lines visible → readable · none on a marked road → NOT readable</text>
+  <text x="765" y="550" font-size="13" fill="#374151">none on a minor road → unmarked by design</text>
+
+  <rect x="750" y="570" width="430" height="72" rx="10" fill="#ffffff" stroke="#8b5cf6"/>
+  <text x="765" y="594" font-size="14" font-weight="700" fill="#111827">ESCALATE <tspan font-weight="400" fill="#374151">to people</tspan></text>
+  <text x="765" y="616" font-size="13" fill="#374151">split evidence, no usable photos or map conflict</text>
+  <text x="765" y="634" font-size="13" fill="#374151">→ human review queue</text>
+
+  <text x="750" y="662" font-size="12" font-style="italic" fill="#6b21a8">every step logged in agent_trace.jsonl (auditable)</text>
+
+  <!-- ===== D. Outputs ===== -->
+  <rect x="1230" y="110" width="330" height="560" rx="14" fill="#ecfdf5" stroke="#10b981" stroke-width="1.5"/>
+  <text x="1250" y="142" font-size="18" font-weight="700" fill="#065f46">Outputs</text>
+
+  <rect x="1250" y="160" width="290" height="100" rx="10" fill="#ffffff" stroke="#10b981"/>
+  <text x="1265" y="188" font-size="15" font-weight="700" fill="#111827">Map dashboard</text>
+  <text x="1265" y="212" font-size="13" fill="#374151">172 locations, 15 Sydney suburbs</text>
+  <text x="1265" y="234" font-size="13" fill="#374151">public HTTPS via CloudFront</text>
+
+  <rect x="1250" y="280" width="290" height="100" rx="10" fill="#ffffff" stroke="#10b981"/>
+  <text x="1265" y="308" font-size="15" font-weight="700" fill="#111827">Inspection queue</text>
+  <text x="1265" y="332" font-size="13" fill="#374151">HIGH: no visible lines on major roads</text>
+  <text x="1265" y="354" font-size="13" fill="#374151">then medium, then review</text>
+
+  <rect x="1250" y="400" width="290" height="100" rx="10" fill="#ffffff" stroke="#10b981"/>
+  <text x="1265" y="428" font-size="15" font-weight="700" fill="#111827">Human review</text>
+  <text x="1265" y="452" font-size="13" fill="#374151">split evidence, map conflicts,</text>
+  <text x="1265" y="474" font-size="13" fill="#374151">no usable photos</text>
+
+  <rect x="1250" y="520" width="290" height="100" rx="10" fill="#ffffff" stroke="#10b981"/>
+  <text x="1265" y="548" font-size="15" font-weight="700" fill="#111827">Try it live (public API)</text>
+  <text x="1265" y="572" font-size="13" fill="#374151">one photo → OpenCV 5 + VLM</text>
+  <text x="1265" y="594" font-size="13" fill="#374151">about 3 s when warm</text>
+
+  <!-- ===== AWS band ===== -->
+  <rect x="40" y="700" width="1520" height="270" rx="14" fill="#fff7ed" stroke="#f97316" stroke-width="1.5"/>
+  <text x="60" y="732" font-size="18" font-weight="700" fill="#9a3412">AWS (Sydney, ap-southeast-2)</text>
+
+  <rect x="60" y="750" width="200" height="190" rx="10" fill="#ffffff" stroke="#f97316"/>
+  <text x="75" y="780" font-size="15" font-weight="700" fill="#111827">Amazon ECR</text>
+  <text x="75" y="806" font-size="13" fill="#374151">container image</text>
+  <text x="75" y="828" font-size="13" fill="#374151">OpenCV 5 + two</text>
+  <text x="75" y="850" font-size="13" fill="#374151">ONNX models</text>
+  <text x="75" y="872" font-size="13" fill="#374151">ARM64</text>
+
+  <rect x="300" y="750" width="300" height="190" rx="10" fill="#ffffff" stroke="#f97316"/>
+  <text x="315" y="780" font-size="15" font-weight="700" fill="#111827">AWS Lambda</text>
+  <text x="315" y="806" font-size="13" fill="#374151">container on ARM64 Graviton, 3008 MB</text>
+  <text x="315" y="828" font-size="13" fill="#374151">Function URL = public API</text>
+  <text x="315" y="850" font-size="13" fill="#374151">OpenCV DNN classic engine</text>
+  <text x="315" y="872" font-size="13" fill="#374151">(new engine segfaults on ARM64)</text>
+
+  <rect x="640" y="750" width="260" height="190" rx="10" fill="#ffffff" stroke="#f97316"/>
+  <text x="655" y="780" font-size="15" font-weight="700" fill="#111827">Amazon Bedrock</text>
+  <text x="655" y="806" font-size="13" fill="#374151">Nova Lite (vision)</text>
+  <text x="655" y="828" font-size="13" fill="#374151">Tool C for the agent</text>
+  <text x="655" y="850" font-size="13" fill="#374151">and the live API</text>
+  <text x="655" y="872" font-size="13" fill="#374151">temperature 0, answers cached</text>
+
+  <rect x="940" y="750" width="300" height="190" rx="10" fill="#ffffff" stroke="#f97316"/>
+  <text x="955" y="780" font-size="15" font-weight="700" fill="#111827">S3 (private) + CloudFront</text>
+  <text x="955" y="806" font-size="13" fill="#374151">Origin Access Control</text>
+  <text x="955" y="828" font-size="13" fill="#374151">public HTTPS dashboard</text>
+  <text x="955" y="850" font-size="13" fill="#374151">map data published as GeoJSON</text>
+
+  <rect x="1280" y="750" width="260" height="190" rx="10" fill="#ffffff" stroke="#f97316"/>
+  <text x="1295" y="780" font-size="15" font-weight="700" fill="#111827">IAM + CloudWatch</text>
+  <text x="1295" y="806" font-size="12" fill="#374151">Lambda role: write logs only, plus</text>
+  <text x="1295" y="826" font-size="12" fill="#374151">bedrock:InvokeModel on Nova Lite</text>
+  <text x="1295" y="846" font-size="12" fill="#374151">Mapillary token in function settings</text>
+  <text x="1295" y="866" font-size="12" fill="#374151">one structured log line per request</text>
+
+  <!-- ===== Arrows ===== -->
+  <!-- Mapillary -> pipeline -->
+  <line x1="270" y1="225" x2="338" y2="200" stroke="#374151" stroke-width="2" marker-end="url(#arrow)"/>
+  <!-- pipeline status -> agent PERCEIVE (via gap at x=707) -->
+  <polyline points="680,605 707,605 707,196 748,196" fill="none" stroke="#374151" stroke-width="2" marker-end="url(#arrow)"/>
+  <!-- OSM -> agent CONTEXT (under the panels, up the gap at x=721) -->
+  <polyline points="270,415 305,415 305,684 721,684 721,278 748,278" fill="none" stroke="#6b7280" stroke-width="2" stroke-dasharray="6,4" marker-end="url(#arrow)"/>
+  <!-- agent -> outputs -->
+  <line x1="1200" y1="390" x2="1228" y2="390" stroke="#374151" stroke-width="2" marker-end="url(#arrow)"/>
+  <!-- agent ASK -> Bedrock -->
+  <polyline points="1180,442 1215,442 1215,690 770,690 770,748" fill="none" stroke="#c2410c" stroke-width="2" marker-end="url(#arrow)"/>
+  <!-- ECR -> Lambda -->
+  <line x1="260" y1="845" x2="298" y2="845" stroke="#374151" stroke-width="2" marker-end="url(#arrow)"/>
+  <!-- Lambda -> Bedrock -->
+  <line x1="600" y1="845" x2="638" y2="845" stroke="#c2410c" stroke-width="2" marker-end="url(#arrow)"/>
+  <!-- CloudFront -> dashboard outputs -->
+  <line x1="1225" y1="750" x2="1300" y2="672" stroke="#374151" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <text x="40" y="992" font-size="12" fill="#6b7280">Data: Mapillary contributors (CC BY-SA 4.0), © OpenStreetMap contributors (ODbL). Models: fastseg (MIT), Ultra-Fast-Lane-Detection (MIT), Amazon Nova Lite.</text>
+</svg>

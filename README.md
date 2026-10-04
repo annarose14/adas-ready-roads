@@ -46,6 +46,8 @@ Full numbers, protocol and history: `notes/final_evaluation.md` and the `eval_*.
 
 ## How it works
 
+![Architecture](docs/architecture.png)
+
 ~~~
 Mapillary photos (CC BY-SA)                         OpenStreetMap (ODbL)
         |                                                   |
