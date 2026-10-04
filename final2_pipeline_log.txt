@@ -1,0 +1,17 @@
+  ...50/538
+  ...100/538
+  ...150/538
+  ...200/538
+  ...250/538
+  ...300/538
+  ...350/538
+  ...400/538
+  ...450/538
+  ...500/538
+OpenCV 5.0.0 - v4-hybrid-2026-10-04 (classic engine) processed 538 images from data_final2/ -> output_final2/
+  inferred   136
+  no_lanes   155
+  not_road   4
+  painted    176
+  review     22
+  unusable   45

@@ -1,0 +1,10 @@
+segment_id,road_name,highway,final_verdict,priority,reason,frame_ids
+L0029,Old Princes Highway,unclassified,human_review,review,camera evidence split (4 yes / 2 no),1094678702897240;1072102985674676;1039196940636069;1527578031364455;1096021586437077;1095637244979923;1058759067017305;1063261028248738;1555515606045779;1170185745079745
+L0030,Waratah Street,tertiary,human_review,review,camera evidence split (2 yes / 1 no),1121617124153921;1074401984984780;1030179452663571
+L0032,Copeland Street,trunk,not_readable,high,no visible lane lines (2/2 photos) on a road expected to be marked,1061513204375215;1095598537593287
+L0034,Collimore Avenue,residential,human_review,review,camera evidence split (1 yes / 1 no),1103520996822519;1119475635216093
+L0036,Memorial Avenue,tertiary,human_review,review,camera evidence split (2 yes / 1 no),1178348742587569;187349679915532;250296209988185
+L0037,Memorial Avenue,tertiary,human_review,review,camera evidence split (2 yes / 1 no),135170718606050;222966739337151;293695645788204
+L0045,,,human_review,review,camera evidence split (1 yes / 1 no),255698733012311;2912303475826055;182503457087654
+L0054,East Parade,tertiary,human_review,review,no usable road photos even after fetching more,1149027008904440
+L0056,Old Princes Highway,primary,not_readable,high,no visible lane lines (1/1 photos) on a road expected to be marked,809630849961572
