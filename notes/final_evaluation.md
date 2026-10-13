@@ -128,3 +128,11 @@ Same photos and prompt; modes full / crop (road region from segmentation) / mask
 Pooled development (72 locations): full balanced 78% (lines 51/61, no lines 8/11); crop 77% (51/62, 5/7);
 mask 74% (35/57, 6/7, 12 unclear). Pre-agreed rule (>= +5 balanced) not met -> not adopted, no fresh test.
 Interpretation: the VLM uses scene context (kerbs, road width, traffic) to judge whether lines belong there.
+
+## Missing-markings test: plan written BEFORE running (14 Oct)
+Purpose: measure whether frozen v5 finds roads WITHOUT visible lane lines (unproven so far: 9 of 16).
+Areas never used before, chosen because unmarked or faded roads are likely (sample enriched, disclosed):
+Paddington, Oran Park, Marsden Park, Smithfield industrial. System: v5 exactly as deployed, no changes.
+Blind binary labels on sheets generated from this exact run. Evaluated once.
+Main numbers: no lines found (recall on human 'no'), lines found (recall on human 'yes'),
+balanced accuracy, and precision of the system's 'no' answers. Reported whatever they show.
