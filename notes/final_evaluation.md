@@ -114,3 +114,11 @@ the lines-visible verdict (VLM evidence does); it affects priority, unmarked-vs-
 wording, map-conflict check and location grouping only. Disclosed; not re-run further.
 Consensus subset (54 locations both passes = yes): confirmed 42, review 6, wrongly 'no' 6
 -> 88% of decided; 11% routed to humans; 11% false 'no lines' (false alarms, not dangerous misses).
+
+## Ablation: OpenCV gate vs no gate (13 Oct, ablation_gate.py, eval_ablation.txt)
+Same locations, photo pools, labels, OSM context and rules; cached VLM answers.
+OpenCV rejected 7% (clean test) and 9% (final set) of pooled photos.
+Clean test: gated 42/49 = 86%, no gate 41/50 = 82%. Final set: gated 35/45 = 78% (balanced 69%),
+no gate 33/44 = 75% (balanced 72%). Without the gate 5% and 12% of calls went to rejected photos.
+Conclusion: the gate saves wasted calls but its accuracy effect is small and within noise; the
+vehicle speed filter already removes most unusable photos. Reported as found.
