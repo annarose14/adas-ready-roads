@@ -232,3 +232,21 @@ before the experiment ran.
 * Built with OpenCV 5, AWS Lambda, ECR, S3, CloudFront, IAM and Bedrock.
 
 Author: Anna Rose Bijoy, Master of IT (AI), UNSW Sydney.
+
+## Missing markings test (14 Oct 2026)
+
+Four suburbs picked in advance for new estates and narrow streets, where unmarked roads are common: Paddington, Oran Park, Marsden Park and Smithfield. Frozen v5, labelled blind, evaluated once.
+
+| Measure | Result |
+|---|---|
+| Locations | 60 (583 photos) |
+| Agreement (decided) | 48 of 56, 86% (95% CI 74 to 93%) |
+| Cohen's kappa | 0.65 |
+| Balanced accuracy | 79% (always yes 50%, OpenStreetMap only 56%) |
+| Lines visible, confirmed | 37 of 37 (100%) |
+| No lines, found | 11 of 19 (58%) |
+| Sent to review | 4, of which 3 had no lines |
+
+All 8 errors were roads without lines called "lines visible". Pooled across all tests: lines confirmed 127 of 142 (about 89%), no lines found 20 of 35 (about 57%).
+
+The public Overpass servers stopped answering during this run, so 32 of 86 segments ran without OpenStreetMap context (`run_agent_cached_osm.py`). OSM does not change the verdict in v5. `agent_tools.py` now rotates across Overpass servers with a 60 s limit per location. Full log: `notes/final_evaluation.md`. Results: `eval_final3_segments_agent.txt`.
