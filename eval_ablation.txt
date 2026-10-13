@@ -1,0 +1,15 @@
+OpenCV gate ablation  |  VLM apac.amazon.nova-lite-v1:0  |  same photos, labels, map data and rules
+
+== Clean test: Penrith, Sutherland, Liverpool, Ryde  (56 locations, 574 photos in the pool, 38 of them rejected by OpenCV 5 = 7%) ==
+GATED   (v5):  agreement 42/49 = 86% [CI 73 to 93%]  kappa -0.04  balanced 44%  lines found 42/48  no lines found 0/1  decided 49/56
+         VLM calls 119 (2.1 per location), calls on photos OpenCV rejected: 0
+NO GATE:       agreement 41/50 = 82% [CI 69 to 90%]  kappa -0.04  balanced 42%  lines found 41/49  no lines found 0/1  decided 50/56
+         VLM calls 124 (2.2 per location), calls on photos OpenCV rejected: 6 (5%), UNCLEAR answers: 0
+Asking about every photo instead would cost 574 calls (10.2 per location).
+
+== Final set: 5 suburbs (reused, disclosed)  (48 locations, 741 photos in the pool, 68 of them rejected by OpenCV 5 = 9%) ==
+GATED   (v5):  agreement 35/45 = 78% [CI 64 to 87%]  kappa 0.31  balanced 69%  lines found 31/38  no lines found 4/7  decided 45/48
+         VLM calls 122 (2.5 per location), calls on photos OpenCV rejected: 0
+NO GATE:       agreement 33/44 = 75% [CI 61 to 85%]  kappa 0.36  balanced 72%  lines found 27/35  no lines found 6/9  decided 44/48
+         VLM calls 125 (2.6 per location), calls on photos OpenCV rejected: 15 (12%), UNCLEAR answers: 0
+Asking about every photo instead would cost 741 calls (15.4 per location).
