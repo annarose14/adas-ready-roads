@@ -6,7 +6,7 @@
 <title>ADAS-Ready Roads</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <style>
-  :root { --ink:#1d2433; --muted:#5b6475; --line:#e3e6ec; --bg:#f6f7f9; --card:#fff; --accent:#2457d6; --warn:#fff6e0; --warnline:#e0b84d; }
+  :root { --ink:#1d2433; --muted:#5b6475; --line:#e3e6ec; --bg:#f6f7f9; --card:#fff; --accent:#2457d6; --warn:#fff6e0; --warnline:#e0b84d; --tour:#eef3ff; }
   * { box-sizing: border-box; }
   body { margin:0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color:var(--ink); background:var(--bg); }
   header { padding:16px 20px; background:var(--card); border-bottom:1px solid var(--line); }
@@ -18,6 +18,15 @@
   aside { overflow-y:auto; display:flex; flex-direction:column; gap:12px; }
   .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px; }
   .card h2 { font-size:1rem; margin:0 0 8px; }
+  .tour { background:var(--tour); border-color:#b9c9f5; }
+  .tour .headline { margin:0 0 8px; font-size:.92rem; }
+  .tour ol { margin:0 0 8px; padding-left:20px; font-size:.9rem; }
+  .tour li { margin:6px 0; }
+  .linkbtn { all:unset; cursor:pointer; color:var(--accent); font-weight:600; text-decoration:underline; }
+  .linkbtn:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+  .trace { margin-top:10px; padding:10px; background:var(--bg); border-radius:8px; font-size:.85rem; }
+  .trace ol { margin:6px 0 0; padding-left:20px; }
+  .trace li { margin:4px 0; }
   .legend { display:grid; grid-template-columns: 1fr auto; gap:4px 8px; font-size:.9rem; }
   .sw { display:inline-block; width:12px; height:12px; border-radius:3px; margin-right:6px; vertical-align:-1px; }
   .prio { list-style:none; margin:0; padding:0; font-size:.9rem; }
@@ -51,6 +60,20 @@
 <main>
   <div id="map" role="region" aria-label="Map of assessed locations"></div>
   <aside>
+    <section class="card tour" aria-labelledby="tour-h">
+      <h2 id="tour-h">Quick tour (about 1 minute)</h2>
+      <p class="headline">On 4 Sydney suburbs it had never seen, it confirmed visible lane lines at <strong>42 of 48</strong> decided locations (88%) and sent 7 more to people.</p>
+      <ol>
+        <li><button class="linkbtn" id="tour-1">Open a location</button> to see its verdict, the evidence behind it and its photos.</li>
+        <li><button class="linkbtn" id="tour-2">Follow one agent decision</button> at Waratah Lane, step by step.</li>
+        <li><button class="linkbtn" id="tour-3">Run a live photo</button> through OpenCV 5 and Amazon Bedrock on AWS.</li>
+      </ol>
+      <p class="muted">More:
+        <a href="https://github.com/annarose14/adas-ready-roads/blob/main/docs/technical_report.pdf" target="_blank" rel="noopener">technical report</a> ·
+        <a href="https://github.com/annarose14/adas-ready-roads" target="_blank" rel="noopener">code and tests</a> ·
+        <a href="https://unft6yl7d6znbr6gvfvqbwzqmq0tidph.lambda-url.ap-southeast-2.on.aws/" target="_blank" rel="noopener">what is running on AWS</a></p>
+    </section>
+
     <section class="card" aria-labelledby="sum-h">
       <h2 id="sum-h">Assessed locations</h2>
       <div id="legend" class="legend"></div>
@@ -76,7 +99,7 @@
       <div id="details" class="muted">Select a location on the map or in the inspection queue.</div>
     </section>
 
-    <section class="card" aria-labelledby="try-h">
+    <section class="card" aria-labelledby="try-h" id="try-card">
       <h2 id="try-h">Try it live (AWS)</h2>
       <p class="muted">One photo: OpenCV 5 checks it is a usable road photo, then a vision-language model on Amazon Bedrock is asked whether painted lane lines are visible. The first request can take ~15 s while the server starts.</p>
       <label for="mly">Mapillary image ID</label>
@@ -103,6 +126,15 @@ const COLORS = { adas_readable:"#1a9850", not_readable:"#d73027", unmarked_by_de
 const LABELS = { adas_readable:"Lane lines visible", not_readable:"No visible lines (should be marked)",
                  unmarked_by_design:"Unmarked by design", human_review:"Needs human review",
                  at_risk:"At risk" };
+const TRACE_ID = "C-L0015";
+const TRACE_HTML = `<div class="trace"><strong>How the agent decided here</strong> (from its log, agent_trace.jsonl)
+  <ol>
+    <li><strong>Perceive:</strong> OpenCV 5 checked 4 photos and accepted only 2 as usable road views.</li>
+    <li><strong>Context:</strong> OpenStreetMap says a service lane, not expected to be marked.</li>
+    <li><strong>Act:</strong> 2 photos is too few, so it fetched 8 more within 44 m (8 road photos).</li>
+    <li><strong>Ask:</strong> the model on Bedrock saw lines in the first 2 photos, so it stopped early instead of asking 6.</li>
+    <li><strong>Decide:</strong> lane lines visible (2 of 2 photos).</li>
+  </ol></div>`;
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const badge = (txt, color) => `<span class="badge" style="background:${color}">${esc(txt)}</span>`;
 
@@ -112,6 +144,7 @@ L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
   maxZoom: 19 }).addTo(map);
 map.setView([-33.87, 151.1], 10);
 const layersById = {};
+let allProps = [];
 
 function showLocation(p) {
   const frames = (p.frame_ids || "").split(";").filter(Boolean);
@@ -136,13 +169,19 @@ function showLocation(p) {
 
 function focusLocation(id) {
   const layer = layersById[id];
-  if (!layer) return;
+  if (!layer) return false;
   if (layer.getBounds) map.fitBounds(layer.getBounds(), { maxZoom: 18, padding: [40, 40] });
   else map.setView(layer.getLatLng(), 18);
   layer.fire("click");
+  return true;
+}
+
+function scrollToCard(id) {
+  document.getElementById(id).scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 fetch("segments_agent.geojson").then(r => r.json()).then(data => {
+  allProps = data.features.map(f => f.properties);
   const layer = L.geoJSON(data, {
     style: f => ({ color: COLORS[f.properties.final_verdict] || "#333", weight: 7, opacity: 0.9 }),
     pointToLayer: (f, ll) => L.circleMarker(ll, { radius: 8, weight: 2,
@@ -163,8 +202,7 @@ fetch("segments_agent.geojson").then(r => r.json()).then(data => {
   document.getElementById("count").textContent = `${data.features.length} locations across 15 Sydney suburbs.`;
 
   const rank = { high: 0, medium: 1, review: 2 };
-  const prio = data.features.map(f => f.properties).filter(p => p.priority in rank)
-    .sort((a, b) => rank[a.priority] - rank[b.priority]);
+  const prio = allProps.filter(p => p.priority in rank).sort((a, b) => rank[a.priority] - rank[b.priority]);
   const icon = { high: "🔴", medium: "🟠", review: "🟣" };
   document.getElementById("priority").innerHTML = prio.length ? prio.slice(0, 20).map(p =>
     `<li><button data-id="${esc(p.segment_id)}">${icon[p.priority]} ${esc(p.road_name || p.segment_id)}</button>
@@ -172,6 +210,24 @@ fetch("segments_agent.geojson").then(r => r.json()).then(data => {
   document.querySelectorAll("#priority button").forEach(b => b.addEventListener("click", () => focusLocation(b.dataset.id)));
 }).catch(() => {
   document.getElementById("legend").textContent = "Could not load segments_agent.geojson";
+});
+
+// ---------- Quick tour ----------
+document.getElementById("tour-1").addEventListener("click", () => {
+  const pick = allProps.find(p => p.final_verdict === "adas_readable" && p.road_name && Number(p.vlm_asked) >= 2
+                                  && String(p.segment_id).startsWith("C-"))
+            || allProps.find(p => p.final_verdict === "adas_readable");
+  if (pick && focusLocation(pick.segment_id)) scrollToCard("det-h");
+});
+document.getElementById("tour-2").addEventListener("click", () => {
+  if (!focusLocation(TRACE_ID)) document.getElementById("details").innerHTML = "";
+  document.getElementById("details").insertAdjacentHTML("beforeend", TRACE_HTML);
+  scrollToCard("det-h");
+});
+document.getElementById("tour-3").addEventListener("click", () => {
+  document.getElementById("mly").value = "1043027243798906";
+  scrollToCard("try-card");
+  document.getElementById("go-mly").click();
 });
 
 // ---------- Try it live ----------
