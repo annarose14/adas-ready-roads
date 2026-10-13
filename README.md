@@ -11,13 +11,14 @@ without sending out survey vehicles.
 > **Research prototype.** Verdicts are screening hints to prioritise human inspection, not
 > safety certifications. The evaluation below states what has and has not been demonstrated.
 
-* **Live dashboard:** https://d1dzzj0gvxxl4o.cloudfront.net
+* **Live dashboard:** https://d1dzzj0gvxxl4o.cloudfront.net (start with the **Quick tour** box at the top)
 * **Live API (AWS Lambda Function URL):** https://unft6yl7d6znbr6gvfvqbwzqmq0tidph.lambda-url.ap-southeast-2.on.aws/
-  Opening it in a browser shows how to use it. To analyse a photo, send a POST request, for example:
+  Opening it in a browser shows how to use it and **what is running**: OpenCV version, DNN engine,
+  both ONNX models with fingerprints, and the git commit. To analyse a photo, send a POST request:
   `curl -X POST https://unft6yl7d6znbr6gvfvqbwzqmq0tidph.lambda-url.ap-southeast-2.on.aws/ -H 'content-type: application/json' -d '{"mapillary_id": "1043027243798906"}'`
-  The easiest way to try it is the "Try it live" box on the dashboard.
-* Entry for the OpenCV AI Competition 2026 (powered by AWS).
 * **Technical report:** [docs/technical_report.pdf](docs/technical_report.pdf)
+* Entry for the OpenCV AI Competition 2026 (powered by AWS): **Overall** and the **Agentic Vision Award**.
+  Best Use of COOL is not entered, because this project does not use COOL.
 
 ---
 
@@ -79,12 +80,33 @@ Mapillary photos (CC BY-SA)                         OpenStreetMap (ODbL)
       IAM least privilege: logs only, plus bedrock:InvokeModel on Nova Lite only
 ~~~
 
+One agent decision, step by step (`make trace`, location L0015, Waratah Lane):
+
+~~~
+1. PERCEIVE  OpenCV 5 checked 4 photos: 2 usable road photos, paint confirmed in 0%
+2. CONTEXT   OpenStreetMap: Waratah Lane (service), expected to be marked: False, junction: False
+3. ACT       Too few road photos, so fetched 8 more within 44 m: road photos 2 -> 8
+4. ASK       Asked the vision model about 2 of 8 photos: 2 yes, 0 no, so stopped early
+5. DECIDE    adas_readable: painted lane lines visible (2/2 photos) (priority: none)
+~~~
+
 ### Why a vision language model?
 Three approaches using OpenCV alone were built and honestly tested on unseen suburbs, and all
 scored at chance (see History). The evaluation target, "are painted lines visible?", is a human
 visual judgement, and a VLM matched blind human labels far better (development probe: 96%,
-kappa 0.84 on consistently labelled locations). OpenCV 5 stays the first stage. It rejects
-unusable and non road photos and selects the frames the VLM sees, which keeps calls few and cheap.
+kappa 0.84 on consistently labelled locations). OpenCV 5 stays the first stage.
+
+### What OpenCV contributes, measured
+Two experiments measured the OpenCV stage on top of the VLM, with the same photos, labels and rules:
+
+| Experiment | Result |
+|---|---|
+| Gate ablation (`ablation_gate.py`): every photo goes to the model, no OpenCV filtering | Clean test 82% vs 86% gated; final set 75% vs 78% (balanced 72% vs 69%). Without the gate, 5% and 12% of calls went to photos OpenCV rejects |
+| Road focus probe (`crop_probe.py`): model sees only the segmented road, or the road with the rest greyed out | Balanced 77% (crop) and 74% (grey) vs 78% for the full photo, on 72 development locations. Not adopted (a +5 point rule was fixed in advance) |
+
+So in v5 OpenCV decides when the agent fetches more evidence, chooses which photos the model sees
+and avoids wasted calls; its effect on final accuracy is small. The model judges best with the
+whole scene.
 
 ### OpenCV 5 findings
 * **The new OpenCV 5 DNN engine segfaults** on both ONNX models on Linux ARM64 (AWS Lambda),
@@ -92,6 +114,24 @@ unusable and non road photos and selects the frames the VLM sees, which keeps ca
   (`cv.dnn.readNetFromONNX(path, engine=cv.dnn.ENGINE_CLASSIC)`) is stable. Verdicts from the
   classic and new engines agreed on 318 of 320 photos (`compare_engines.py`).
 * The output shape of `HoughLinesP` changed from 4.x; this is handled with `reshape(-1, 4)`.
+
+---
+
+## Tests
+
+~~~bash
+pip install -r requirements.txt -r requirements-dev.txt
+make check     # 33 tests, offline, about 1 second
+make trace     # prints the Waratah Lane agent trace
+~~~
+
+| Test file | What it checks |
+|---|---|
+| `tests/test_quality.py` | OpenCV quality gate (dark, blurry, panorama), resizing, own bonnet detection |
+| `tests/test_segments.py` | Distances, speeds and the walking filter, segment splitting, verdict thresholds |
+| `tests/test_agent.py` | Agent decisions: stops after two matching answers, fetches only when evidence is thin, never sends rejected photos to the model, routes split answers and map conflicts to people, flags major roads as high priority |
+| `tests/test_eval_maths.py` | Confidence intervals (reproduces the reported 75 to 94%), kappa, balanced accuracy |
+| `tests/test_handler.py` | API: usage guide and runtime section, bad input rejected, unusable photos never reach Bedrock (skipped if model files are absent) |
 
 ---
 
@@ -107,11 +147,14 @@ unusable and non road photos and selects the frames the VLM sees, which keeps ca
 | `segments.py` | Vehicle speed filter, segments of about 100 m, summary per segment |
 | `run_pipeline.py` | Runs the pipeline over `<data>/<area>/*.jpg` |
 | `fetch_mapillary.py` | Downloads images and metadata (including photographer credit) for a bounding box |
-| `handler.py`, `Dockerfile` | AWS Lambda endpoint for single photos (OpenCV 5 and Bedrock) |
-| `dashboard/` | Static map dashboard (Leaflet), hosted on S3 and CloudFront |
+| `handler.py`, `Dockerfile` | AWS Lambda endpoint for single photos (OpenCV 5 and Bedrock), with runtime info |
+| `dashboard/` | Static map dashboard (Leaflet) with the Quick tour, hosted on S3 and CloudFront |
+| `show_trace.py` | Prints one location's agent trace as readable steps |
+| `ablation_gate.py`, `road_focus.py`, `crop_probe.py` | Experiments on what the OpenCV stage contributes |
 | `view_segments.py`, `label_binary.py`, `label_locations.py` | Contact sheets and blind labelling tools |
 | `evaluate_binary.py`, `evaluate_locations.py`, `label_agreement.py`, `remap_labels.py` | Evaluation, label reliability and label mapping |
 | `export_seg.py`, `export_ufld.py` | One time ONNX export of the two models |
+| `tests/`, `Makefile`, `pytest.ini` | Automated tests (`make check`) |
 | `notes/` | Failure analyses and the full evaluation log |
 
 ---
@@ -121,7 +164,7 @@ unusable and non road photos and selects the frames the VLM sees, which keeps ca
 **1. Setup** (macOS or Linux, Python 3.12 or newer):
 ~~~bash
 python -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
+pip install -r requirements.txt -r requirements-dev.txt
 ~~~
 
 **2. Models** (not in git; see licences below):
@@ -146,12 +189,12 @@ python view_segments.py --prefix main_ all            # annotated contact sheets
 Outputs: `main_segments_agent.csv` and `.geojson`, `main_review_queue.csv`,
 `main_agent_trace.jsonl`, `main_agent_frames.csv`.
 
-**5. Deploy** (summary): build the container (`docker build --platform linux/arm64 --provenance=false
---sbom=false`) and push it to ECR. Create a Lambda (ARM64, 3008 MB, 60 s) from the image, with a
-role that has `AWSLambdaBasicExecutionRole` plus `bedrock:InvokeModel` on Nova Lite only. Add a
-Function URL with both `lambda:InvokeFunctionUrl` and `lambda:InvokeFunction`
-(`--invoked-via-function-url`). Host `dashboard/` in a private S3 bucket behind CloudFront with
-Origin Access Control.
+**5. Deploy** (summary): build the container
+(`docker build --platform linux/arm64 --provenance=false --sbom=false --build-arg GIT_COMMIT=$(git rev-parse --short HEAD)`)
+and push it to ECR. Create a Lambda (ARM64, 3008 MB, 60 s) from the image, with a role that has
+`AWSLambdaBasicExecutionRole` plus `bedrock:InvokeModel` on Nova Lite only. Add a Function URL with
+both `lambda:InvokeFunctionUrl` and `lambda:InvokeFunction` (`--invoked-via-function-url`). Host
+`dashboard/` in a private S3 bucket behind CloudFront with Origin Access Control.
 
 ---
 
@@ -162,10 +205,12 @@ Origin Access Control.
 | v0 to v3c | Hand built OpenCV paint detector (top hat, Hough, contrast) with segmentation | Overfit the development data; locked test had 7 of 17 dangerous misses; location test on fresh suburbs 42% |
 | v4 | Ultra-Fast-Lane-Detection (OpenCV DNN) with paint verification | Final test 44%, kappa −0.01 (chance) |
 | v5 | VLM tool on Bedrock gated by OpenCV, adaptive evidence, OSM | Clean test: 88% of lined locations confirmed; missing markings unproven |
+| Later experiments | OpenCV gate ablation; road focus crop for the VLM | Gate saves wasted calls, small accuracy effect; crop did not help and was not adopted |
 
 Protocol: thresholds were tuned on development data only; each test set was used once (reuse is
 disclosed); labels were blind; contact sheets were generated from the exact run being evaluated;
-label reliability was measured with a second blind pass.
+label reliability was measured with a second blind pass; rules for adopting a change were fixed
+before the experiment ran.
 
 ---
 
@@ -173,6 +218,7 @@ label reliability was measured with a second blind pass.
 * Screening only. Never a substitute for an on site inspection or a safety assessment.
 * Detection of missing markings is not yet validated (too few unmarked roads in the data).
 * Labels come from a single labeller, and wear cannot be judged reliably from crowd photos.
+* The OpenCV stage's measured effect on final accuracy is small; the VLM makes the visual judgement.
 * Crowd imagery is uneven in time, camera, weather and coverage; results reflect when photos were taken.
 * OpenStreetMap lookups can fail under server load (disclosed for each evaluation).
 * Photographer credit and licence are kept with every photo; no images are stored in the repository.
