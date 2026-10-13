@@ -3,8 +3,9 @@
      only from VEHICLE-speed sequences (speed estimated from the API's own GPS/timestamps),
      analyse each with the FROZEN pipeline (adas_pipeline.py).
   B. road_context(): OpenStreetMap road type near a point -> should it have lane markings?
-     Also flags JUNCTIONS (2+ differently named roads nearby). Retries with back-off when
-     the public Overpass server is busy; failed lookups are never cached.
+     Also flags JUNCTIONS (2+ differently named roads nearby). Rotates across public Overpass
+     servers when one is busy, with a hard time limit per location; failed lookups are
+     never cached.
 Data credits: Mapillary images CC BY-SA 4.0 (creator saved); OSM data (c) OpenStreetMap
 contributors, ODbL."""
 import csv
@@ -26,12 +27,21 @@ FIELDS = "id,thumb_2048_url,computed_geometry,captured_at,compass_angle,sequence
 FETCH_DIR = Path("data_agent")
 FETCH_META = FETCH_DIR / "metadata.csv"
 MIN_VEHICLE_KMH = 10       # other people's sequences slower than this are not used
-OVERPASS_URL = "https://overpass-api.de/api/interpreter"
+# Public Overpass servers serving the same OpenStreetMap data. The first one that answers
+# is kept for later lookups; on failure the next one is tried.
+OVERPASS_URLS = (
+    "https://overpass-api.de/api/interpreter",
+    "https://overpass.private.coffee/api/interpreter",
+    "https://overpass.kumi.systems/api/interpreter",
+)
+OVERPASS_URL = OVERPASS_URLS[0]
 OSM_CACHE = Path("osm_cache.json")
 CACHE_VERSION = 2          # v2 adds junction detection; older cache entries are re-queried
 OSM_RADII = (15, 40)       # try close first, then wider (GPS drift / offset centrelines)
-OSM_RETRIES = 3
-OSM_BACKOFF_S = (5, 15, 30)
+OSM_ATTEMPTS = 6           # total tries per query, rotating across servers
+OSM_TIMEOUT = (10, 30)     # seconds: connect, read
+OSM_PAUSE_S = 2            # pause before trying the next server
+OSM_BUDGET_S = 60          # hard limit per location (all radii and servers together)
 HEADERS = {"User-Agent": "ADAS-Ready Roads student project (OpenCV AI Competition 2026)"}
 
 # Road classes that normally carry lane markings in Australian cities
@@ -42,6 +52,7 @@ CLASS_RANK = ["motorway", "trunk", "primary", "secondary", "tertiary", "motorway
               "unclassified", "residential", "living_street", "service", "track"]
 
 _auditor = None
+_mirror = 0
 
 
 def get_auditor():
@@ -155,22 +166,30 @@ def _load_cache():
     return json.loads(OSM_CACHE.read_text()) if OSM_CACHE.exists() else {}
 
 
-def _query_osm(lat, lon, radius_m):
-    """One Overpass query with retries/back-off. Raises on final failure."""
+def _query_osm(lat, lon, radius_m, deadline=None):
+    """One Overpass query. Rotates servers on failure and stops at `deadline`
+    (time.monotonic() value). Raises on final failure."""
+    global _mirror
     query = f'[out:json][timeout:25];way(around:{radius_m},{lat},{lon})[highway];out tags;'
     last_err = None
-    for attempt in range(OSM_RETRIES):
+    for _ in range(OSM_ATTEMPTS):
+        if deadline is not None and time.monotonic() >= deadline:
+            last_err = last_err or "time limit reached"
+            break
+        url = OVERPASS_URLS[_mirror % len(OVERPASS_URLS)]
         try:
-            resp = requests.post(OVERPASS_URL, data={"data": query}, headers=HEADERS, timeout=60)
+            resp = requests.post(url, data={"data": query}, headers=HEADERS, timeout=OSM_TIMEOUT)
             if resp.status_code in (429, 502, 503, 504):
                 raise requests.HTTPError(f"{resp.status_code} server busy")
             resp.raise_for_status()
-            time.sleep(1.0)   # be polite to the public Overpass server
-            return [e.get("tags", {}) for e in resp.json().get("elements", [])]
+            elements = resp.json().get("elements", [])
+            time.sleep(1.0)   # be polite to the public Overpass servers
+            return [e.get("tags", {}) for e in elements]
         except (requests.RequestException, ValueError) as e:
-            last_err = e
-            time.sleep(OSM_BACKOFF_S[min(attempt, len(OSM_BACKOFF_S) - 1)])
-    raise requests.RequestException(f"failed after {OSM_RETRIES} attempts: {last_err}")
+            last_err = f"{url.split('/')[2]}: {e}"
+            _mirror += 1      # next server for the next try
+            time.sleep(OSM_PAUSE_S)
+    raise requests.RequestException(f"failed: {last_err}")
 
 
 def road_context(lat, lon):
@@ -182,10 +201,11 @@ def road_context(lat, lon):
     if hit and hit.get("v") == CACHE_VERSION and hit.get("source") != "osm_no_road":
         return hit
 
+    deadline = time.monotonic() + OSM_BUDGET_S
     roads, radius_used, n_ways = [], None, 0
     try:
         for radius in OSM_RADII:
-            ways = _query_osm(lat, lon, radius)
+            ways = _query_osm(lat, lon, radius, deadline)
             n_ways = len(ways)
             roads = [t for t in ways if t.get("highway") in CLASS_RANK]
             if roads:

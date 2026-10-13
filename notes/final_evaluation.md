@@ -136,3 +136,13 @@ Paddington, Oran Park, Marsden Park, Smithfield industrial. System: v5 exactly a
 Blind binary labels on sheets generated from this exact run. Evaluated once.
 Main numbers: no lines found (recall on human 'no'), lines found (recall on human 'yes'),
 balanced accuracy, and precision of the system's 'no' answers. Reported whatever they show.
+
+## Step 6 run log (14 Oct 2026, before labelling)
+- Fetched paddington, oran_park, marsden_park, smithfield into data_final3: 583 images.
+- Pipeline v4 (unchanged): painted 215, inferred 132, no_lanes 128, not_road 24, review 11, unusable 73.
+- Agent v5 (unchanged logic): kept 496/510 frames, 86 segments merged into 60 locations.
+- Public Overpass servers stopped responding partway through the run (a request hung on a socket read).
+  agent_tools.py now rotates across Overpass servers with a 60 s limit per location.
+  The final run used run_agent_cached_osm.py: cached OSM answers only, the rest recorded as osm_error.
+  osm_error rows: 32. OSM is context only in v5 and does not change the verdict.
+- 60 blind contact sheets written to blind_final3/. Verdicts not viewed before labelling.
