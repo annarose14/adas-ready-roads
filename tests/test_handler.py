@@ -30,6 +30,13 @@ def test_browser_visit_shows_the_usage_guide(handler):
     assert "OpenCV 5" in body["what_it_does"]
 
 
+def test_browser_visit_shows_what_is_running(handler):
+    runtime = call(handler, "GET")[1]["runtime"]
+    assert runtime["opencv_version"].startswith("5")
+    assert runtime["dnn_engine"] == "classic"
+    assert all("sha256_12" in m for m in runtime["opencv_dnn_models"])
+
+
 def test_empty_request_is_rejected(handler):
     assert call(handler)[0] == 400
 

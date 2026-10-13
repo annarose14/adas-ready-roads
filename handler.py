@@ -1,5 +1,5 @@
 """AWS Lambda handler - ADAS-Ready Roads v5 single-photo endpoint.
-GET  (a browser visit)                      -> short usage guide with a link to the dashboard
+GET  (a browser visit)                      -> usage guide + what is running (OpenCV, models, commit)
 POST JSON with ONE of:
   {"image_base64": "<base64 JPEG/PNG>"}     analyse an uploaded road photo
   {"mapillary_id": "1234567890"}            analyse a Mapillary image by id
@@ -8,21 +8,50 @@ paint check (pipeline v4) -> ONLY for real road photos: Amazon Bedrock VLM asked
 "are painted lane lines visible?" -> lines_visible = yes / no / unknown.
 CORS headers are added by the Lambda Function URL configuration (not here)."""
 import base64
+import hashlib
 import json
 import os
+import platform
 import time
+from pathlib import Path
 
 import cv2 as cv
 import numpy as np
 import requests
 
+from adas_pipeline import MODEL as SEG_MODEL
 from adas_pipeline import PIPELINE_VERSION, RoadAuditor, _result, quality_check, resize, to_record
+from lane_features import LANE_MODEL_PATH
 from vlm_tool import MODEL_ID as VLM_MODEL, VLMBlocked, ask_image
 
 MAX_BYTES = 6 * 1024 * 1024
 ROAD_STATUSES = {"painted", "inferred", "no_lanes"}
 DASHBOARD_URL = "https://d1dzzj0gvxxl4o.cloudfront.net"
 AUDITOR = RoadAuditor()            # both OpenCV DNN models loaded once per container (classic engine)
+
+
+def _fingerprint(path):
+    p = Path(path)
+    if not p.exists():
+        return {"file": p.name, "present": False}
+    h = hashlib.sha256()
+    with open(p, "rb") as f:
+        for chunk in iter(lambda: f.read(1 << 20), b""):
+            h.update(chunk)
+    return {"file": p.name, "size_mb": round(p.stat().st_size / 1e6, 1), "sha256_12": h.hexdigest()[:12]}
+
+
+RUNTIME = {
+    "opencv_version": cv.__version__,
+    "dnn_engine": AUDITOR.engine,
+    "opencv_dnn_models": [_fingerprint(SEG_MODEL), _fingerprint(LANE_MODEL_PATH)],
+    "vlm_model": VLM_MODEL,
+    "pipeline_version": PIPELINE_VERSION,
+    "agent_version": "v5",
+    "git_commit": os.environ.get("GIT_COMMIT", "unknown"),
+    "platform": f"{platform.system()} {platform.machine()}, Python {platform.python_version()}",
+    "aws_region": os.environ.get("AWS_REGION", "unknown"),
+}
 
 USAGE = {
     "service": "ADAS-Ready Roads API (OpenCV AI Competition 2026)",
@@ -33,8 +62,7 @@ USAGE = {
                    "or {\"image_base64\": \"<base64 JPEG>\"}",
     "example_curl": "curl -X POST <this URL> -H 'content-type: application/json' "
                     "-d '{\"mapillary_id\": \"1043027243798906\"}'",
-    "pipeline_version": PIPELINE_VERSION,
-    "agent_version": "v5",
+    "runtime": RUNTIME,
 }
 
 
@@ -116,7 +144,8 @@ def handler(event, context):
         out.update(quality=q, opencv_status=res["status"], vlm_answer=vlm, lines_visible=lines_visible,
                    source=source, pipeline_version=PIPELINE_VERSION, agent_version="v5",
                    vlm_model=VLM_MODEL, opencv_version=cv.__version__, dnn_engine=AUDITOR.engine,
-                   opencv_ms=t_cv, latency_ms=int((time.time() - t0) * 1000))
+                   git_commit=RUNTIME["git_commit"], opencv_ms=t_cv,
+                   latency_ms=int((time.time() - t0) * 1000))
         print(json.dumps({"event": "analysed", "status": res["status"], "vlm": vlm,
                           "source": source.get("type"), "latency_ms": out["latency_ms"]}))
         return _response(200, out)
