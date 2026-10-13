@@ -84,7 +84,7 @@
       <h2 id="perf-h">Validated performance (blind human labels)</h2>
       <ul class="perf">
         <li><strong>Clean test</strong> (4 never-used suburbs, 56 locations): where painted lines were visible, the system confirmed them in <strong>42 of 48</strong> decided locations (88%, 95% CI 75–94%) and routed 7 to human review.</li>
-        <li><strong>Missing markings: not yet demonstrated.</strong> Roads without lines are rare in crowd imagery (16 of 133 labelled locations); the system found 9 of those 16 (56%, very uncertain).</li>
+        <li><strong>Missing markings: partly detected.</strong> On a test picked for unmarked streets (60 locations, kappa 0.65) the system found 11 of 19 roads without lines (58%) and confirmed all 37 lined ones. Across all tests: 20 of 35 (57%).</li>
         <li>OpenCV-only versions scored at chance on unseen suburbs; OpenStreetMap alone was a poor guide (54%). Human self-agreement on paint <em>wear</em> was poor (kappa 0.14), so wear is not graded.</li>
       </ul>
     </section>

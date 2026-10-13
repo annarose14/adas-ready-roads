@@ -32,11 +32,11 @@ Ground truth comes from blind human labels.
 | Clean test, 4 unseen suburbs (frozen v5) | 56 | **42 of 48 decided = 88%** (95% CI 75 to 94%) | 0 of 1 (only one such road) |
 | Final set, 5 suburbs (reused, disclosed) | 48 | 31 of 38 = 82% | 4 of 7 |
 | Development suburbs | 29 | 17 of 19 = 89% | 5 of 8 |
-| **Pooled** | 133 | **90 of 105, about 86%** | **9 of 16, about 56% (very uncertain)** |
+| Missing markings test: Paddington, Oran Park, Marsden Park, Smithfield | 60 | 37 of 37, 100% | 11 of 19, 58% |
+| **Pooled** | 193 | **127 of 142, about 89%** | **20 of 35, about 57%** |
 
 * About 1 in 10 locations goes to human review instead of being guessed.
-* **Detecting missing markings is not yet demonstrated.** Roads without lines are rare in
-  crowdsourced imagery (16 of 133 labelled locations).
+* **Missing markings are only partly detected.** On a test picked for unmarked streets the system found 11 of 19 roads without lines (58%), and 3 more went to review. When unsure it leans towards "lines visible".
 * Earlier versions that used OpenCV alone (a hand built paint detector, then a lane network with
   a paint check) scored **at chance** on unseen suburbs: 44% with kappa −0.01 on the 48 location
   set, where v5 reaches 78% with kappa 0.31.
@@ -216,7 +216,7 @@ before the experiment ran.
 
 ## Limitations and responsible use
 * Screening only. Never a substitute for an on site inspection or a safety assessment.
-* Detection of missing markings is not yet validated (too few unmarked roads in the data).
+* Detection of missing markings is only partly validated: 20 of 35 unmarked locations found (57%).
 * Labels come from a single labeller, and wear cannot be judged reliably from crowd photos.
 * The OpenCV stage's measured effect on final accuracy is small; the VLM makes the visual judgement.
 * Crowd imagery is uneven in time, camera, weather and coverage; results reflect when photos were taken.
