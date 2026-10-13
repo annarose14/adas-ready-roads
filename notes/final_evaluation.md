@@ -122,3 +122,9 @@ Clean test: gated 42/49 = 86%, no gate 41/50 = 82%. Final set: gated 35/45 = 78%
 no gate 33/44 = 75% (balanced 72%). Without the gate 5% and 12% of calls went to rejected photos.
 Conclusion: the gate saves wasted calls but its accuracy effect is small and within noise; the
 vehicle speed filter already removes most unusable photos. Reported as found.
+
+## Road focus probe: does an OpenCV 5 road crop help the VLM? (14 Oct, crop_probe.py, development data only)
+Same photos and prompt; modes full / crop (road region from segmentation) / mask (non-road painted grey).
+Pooled development (72 locations): full balanced 78% (lines 51/61, no lines 8/11); crop 77% (51/62, 5/7);
+mask 74% (35/57, 6/7, 12 unclear). Pre-agreed rule (>= +5 balanced) not met -> not adopted, no fresh test.
+Interpretation: the VLM uses scene context (kerbs, road width, traffic) to judge whether lines belong there.
