@@ -146,3 +146,22 @@ balanced accuracy, and precision of the system's 'no' answers. Reported whatever
   The final run used run_agent_cached_osm.py: cached OSM answers only, the rest recorded as osm_error.
   osm_error rows: 32. OSM is context only in v5 and does not change the verdict.
 - 60 blind contact sheets written to blind_final3/. Verdicts not viewed before labelling.
+
+## Step 7 plan (14 Oct 2026, written before any analysis)
+Goal: fewer false "lines visible" on roads without lines.
+- 7a Error analysis on final3 (already evaluated once; its result stays as reported). Diagnosis only.
+- 7b Candidate fixes tried on development + final2 + final3 data only. Adopt one only if balanced
+  accuracy rises by at least 5 points AND lines confirmed stays at 85% or more. At most 3 candidates.
+- 7c The adopted version is frozen, then tested once on 4 new suburbs, labelled blind.
+
+## Step 7a finding and second labelling pass (14 Oct 2026)
+- Looking at the 8 "no lines" locations the agent called "lines visible", most sheets show painted
+  lines (double centre lines, dashed lanes). The first pass was done at 2 am in a small window.
+- Correcting only those 8 would bias the result, so all 60 locations are relabelled in a second,
+  shuffled, full screen pass (labels_final3_pass2.csv). Both passes and their agreement are reported.
+- Disclosed: the labeller had seen those 8 sheets during error analysis before the second pass.
+- Pass 2 result: pass 1 vs pass 2 agree 52/60 (kappa 0.69); all 8 changes were no -> yes, 7 of them
+  sheets seen in error analysis. Against pass 2: 55/56 decided correct (98%, kappa 0.95), lines 44/44,
+  no lines 11/12. Only remaining error: L0043. Both passes reported; pass 1 stays the blind result.
+- Decision: no agent change (one real error does not justify one). v5 stays frozen.
+- Next: a new clean test on 4 suburbs, labelled carefully full screen, before results are viewed.

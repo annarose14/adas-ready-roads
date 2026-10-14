@@ -1,0 +1,18 @@
+EVALUATION: final3_segments_agent.csv vs labels_final3_pass2.csv  (60 locations)
+Question: are painted lane lines visible?
+Human:  yes=46, no=14
+System: yes=45, no=11, review=4
+
+Confusion (rows = HUMAN, columns = SYSTEM)
+                 yes      no  review
+yes               44       0       2
+no                 1      11       2
+
+Coverage: system decided 56/60; human could judge 60/60
+SYSTEM agreement (decided & judgeable): 55/56 = 98%  [95% CI 91-100%]   kappa 0.95
+SYSTEM balanced accuracy: 96%   (majority baseline = 50% by definition)
+  lines visible (human yes): system found them  44/44 = 100%  [95% CI 92-100%]
+  no lines (human no):       system said none   11/12 = 92%  [95% CI 65-99%]
+Baseline 'always yes': 46/60 = 77%  [95% CI 65-86%]   balanced accuracy 50%
+Baseline OpenStreetMap-only: 23/28 = 82%  [95% CI 64-92%]   kappa 0.34   balanced accuracy 66%   (32 with unknown OSM type)
+Sent to human review -> human said: yes=2, no=2
