@@ -24,6 +24,8 @@ without sending out survey vehicles.
 
 ## Results at a glance
 
+**Latest clean test: 96% agreement (kappa 0.80) on 88 new locations, labelled blind; no road without lines called readable.**
+
 Every location is checked against one question: *are painted lane lines visible?*
 Ground truth comes from blind human labels.
 
@@ -248,7 +250,7 @@ Four suburbs picked in advance for new estates and narrow streets, where unmarke
 | No lines, found | 11 of 19 (58%) |
 | Sent to review | 4, of which 3 had no lines |
 
-All 8 errors were roads without lines called "lines visible". Pooled across all tests: lines confirmed 127 of 142 (about 89%), no lines found 20 of 35 (about 57%).
+All 8 errors were roads without lines called "lines visible". Pooled across the tests up to this point: lines confirmed 127 of 142 (about 89%), no lines found 20 of 35 (about 57%).
 
 The public Overpass servers stopped answering during this run, so 32 of 86 segments ran without OpenStreetMap context (`run_agent_cached_osm.py`). OSM does not change the verdict in v5. `agent_tools.py` now rotates across Overpass servers with a 60 s limit per location. Full log: `notes/final_evaluation.md`. Results: `eval_final3_segments_agent.txt`.
 
