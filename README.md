@@ -29,7 +29,7 @@ Ground truth comes from blind human labels.
 
 | Evaluation | Locations | Lines visible, confirmed | No lines, found |
 |---|---|---|---|
-| Clean test, 4 unseen suburbs (frozen v5) | 56 | **42 of 48 decided = 88%** (95% CI 75 to 94%) | 0 of 1 (only one such road) |
+| First clean test, 4 unseen suburbs (frozen v5) | 56 | **42 of 48 decided = 88%** (95% CI 75 to 94%) | 0 of 1 (only one such road) |
 | Final set, 5 suburbs (reused, disclosed) | 48 | 31 of 38 = 82% | 4 of 7 |
 | Development suburbs | 29 | 17 of 19 = 89% | 5 of 8 |
 | Missing markings test: Paddington, Oran Park, Marsden Park, Smithfield | 60 | 37 of 37, 100% | 11 of 19, 58% |
@@ -205,7 +205,7 @@ both `lambda:InvokeFunctionUrl` and `lambda:InvokeFunction` (`--invoked-via-func
 |---|---|---|
 | v0 to v3c | Hand built OpenCV paint detector (top hat, Hough, contrast) with segmentation | Overfit the development data; locked test had 7 of 17 dangerous misses; location test on fresh suburbs 42% |
 | v4 | Ultra-Fast-Lane-Detection (OpenCV DNN) with paint verification | Final test 44%, kappa −0.01 (chance) |
-| v5 | VLM tool on Bedrock gated by OpenCV, adaptive evidence, OSM | Clean test: 88% of lined locations confirmed; missing markings unproven |
+| v5 | VLM tool on Bedrock gated by OpenCV, adaptive evidence, OSM | First clean test: 88% of lined locations confirmed. Clean test 2: 96% agreement, kappa 0.80; no unmarked road called readable |
 | Later experiments | OpenCV gate ablation; road focus crop for the VLM | Gate saves wasted calls, small accuracy effect; crop did not help and was not adopted |
 
 Protocol: thresholds were tuned on development data only; each test set was used once (reuse is
