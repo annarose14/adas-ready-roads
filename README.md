@@ -195,6 +195,8 @@ Outputs: `main_segments_agent.csv` and `.geojson`, `main_review_queue.csv`,
 `main_agent_trace.jsonl`, `main_agent_frames.csv`.
 
 **5. Deploy** (summary): build the container
+**Deploy in one command:** copy `deploy.env.example` to `deploy.env`, fill in your values, then run `./deploy.sh` (or `./deploy.sh api`, `./deploy.sh dashboard`). It builds the ARM64 image tagged with the git commit, pushes it to ECR, updates Lambda, checks that the live API reports that commit, and publishes the dashboard. The manual steps are below for reference.
+
 (`docker build --platform linux/arm64 --provenance=false --sbom=false --build-arg GIT_COMMIT=$(git rev-parse --short HEAD)`)
 and push it to ECR. Create a Lambda (ARM64, 3008 MB, 60 s) from the image, with a role that has
 `AWSLambdaBasicExecutionRole` plus `bedrock:InvokeModel` on Nova Lite only. Add a Function URL with
