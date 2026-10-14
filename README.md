@@ -1,5 +1,7 @@
 # ADAS-Ready Roads
 
+[![tests](https://github.com/annarose14/adas-ready-roads/actions/workflows/tests.yml/badge.svg)](https://github.com/annarose14/adas-ready-roads/actions/workflows/tests.yml)
+
 **Can a camera based lane keeping system see the painted lane lines on this road?**
 
 ADAS-Ready Roads is an agent that screens Sydney streets for lane marking visibility. It uses
