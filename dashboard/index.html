@@ -62,7 +62,7 @@
   <aside>
     <section class="card tour" aria-labelledby="tour-h">
       <h2 id="tour-h">Quick tour (about 1 minute)</h2>
-      <p class="headline">On 4 Sydney suburbs it had never seen, it confirmed visible lane lines at <strong>42 of 48</strong> decided locations (88%) and sent 7 more to people.</p>
+      <p class="headline">On 4 new Sydney suburbs, labelled blind, it agreed with people on <strong>72 of 75</strong> decided locations (96%, kappa 0.80) and sent 13 unclear ones to review.</p>
       <ol>
         <li><button class="linkbtn" id="tour-1">Open a location</button> to see its verdict, the evidence behind it and its photos.</li>
         <li><button class="linkbtn" id="tour-2">Follow one agent decision</button> at Waratah Lane, step by step.</li>
@@ -83,8 +83,8 @@
     <section class="card" aria-labelledby="perf-h">
       <h2 id="perf-h">Validated performance (blind human labels)</h2>
       <ul class="perf">
-        <li><strong>Clean test</strong> (4 never-used suburbs, 56 locations): where painted lines were visible, the system confirmed them in <strong>42 of 48</strong> decided locations (88%, 95% CI 75–94%) and routed 7 to human review.</li>
-        <li><strong>Missing markings: partly detected.</strong> On a test picked for unmarked streets (60 locations, kappa 0.65) the system found 11 of 19 roads without lines (58%) and confirmed all 37 lined ones. Across all tests: 20 of 35 (57%).</li>
+        <li><strong>First clean test</strong> (4 never-used suburbs, 56 locations): where painted lines were visible, the system confirmed them in <strong>42 of 48</strong> decided locations (88%, 95% CI 75–94%) and routed 7 to human review.</li>
+        <li><strong>Latest clean test: 96% agreement (kappa 0.80).</strong> 88 new locations, labelled blind: 72 of 75 decided locations correct, 13 sent to review, and no road without lines called "lines visible". Missing markings rest on few examples (27 of 42 found across all tests).</li>
         <li>OpenCV-only versions scored at chance on unseen suburbs; OpenStreetMap alone was a poor guide (54%). Human self-agreement on paint <em>wear</em> was poor (kappa 0.14), so wear is not graded.</li>
       </ul>
     </section>

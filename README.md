@@ -33,10 +33,11 @@ Ground truth comes from blind human labels.
 | Final set, 5 suburbs (reused, disclosed) | 48 | 31 of 38 = 82% | 4 of 7 |
 | Development suburbs | 29 | 17 of 19 = 89% | 5 of 8 |
 | Missing markings test: Paddington, Oran Park, Marsden Park, Smithfield | 60 | 37 of 37, 100% | 11 of 19, 58% |
-| **Pooled** | 193 | **127 of 142, about 89%** | **20 of 35, about 57%** |
+| Clean test 2: Jordan Springs, Gregory Hills, Box Hill, Leppington | 88 | 65 of 68, 96% | 7 of 7, none called lines visible |
+| **Pooled** | 281 | **192 of 210, about 91%** | **27 of 42, about 64%** |
 
 * About 1 in 10 locations goes to human review instead of being guessed.
-* **Missing markings are only partly detected.** On a test picked for unmarked streets the system found 11 of 19 roads without lines (58%), and 3 more went to review. When unsure it leans towards "lines visible".
+* **Missing markings: promising, few examples.** On the latest clean test no road without lines was called "lines visible" (7 found, 6 sent to review). Across all tests 27 of 42 unmarked locations were found.
 * Earlier versions that used OpenCV alone (a hand built paint detector, then a lane network with
   a paint check) scored **at chance** on unseen suburbs: 44% with kappa −0.01 on the 48 location
   set, where v5 reaches 78% with kappa 0.31.
@@ -216,7 +217,7 @@ before the experiment ran.
 
 ## Limitations and responsible use
 * Screening only. Never a substitute for an on site inspection or a safety assessment.
-* Detection of missing markings is only partly validated: 20 of 35 unmarked locations found (57%).
+* Missing marking detection rests on few unmarked roads (42 across all tests, one labeller).
 * Labels come from a single labeller, and wear cannot be judged reliably from crowd photos.
 * The OpenCV stage's measured effect on final accuracy is small; the VLM makes the visual judgement.
 * Crowd imagery is uneven in time, camera, weather and coverage; results reflect when photos were taken.
@@ -250,3 +251,22 @@ Four suburbs picked in advance for new estates and narrow streets, where unmarke
 All 8 errors were roads without lines called "lines visible". Pooled across all tests: lines confirmed 127 of 142 (about 89%), no lines found 20 of 35 (about 57%).
 
 The public Overpass servers stopped answering during this run, so 32 of 86 segments ran without OpenStreetMap context (`run_agent_cached_osm.py`). OSM does not change the verdict in v5. `agent_tools.py` now rotates across Overpass servers with a 60 s limit per location. Full log: `notes/final_evaluation.md`. Results: `eval_final3_segments_agent.txt`.
+
+## Second labelling pass and clean test 2 (14 Oct 2026)
+
+Error analysis of the missing markings test showed that most "misses" were sheets with painted lines, labelled quickly in a small window. Correcting only those would bias the result, so all 60 were relabelled in a second, shuffled, full screen pass: it agreed with the first on 52 of 60 (kappa 0.69), every change was from no to yes, and against it the system was right on 55 of 56 (98%, kappa 0.95). This pass is not fully blind (7 changed sheets had been seen during error analysis), so the first pass stays the reported blind result. One real error remained, so v5 was not changed.
+
+Clean test 2 then used four new growth suburbs chosen before fetching, the full screen labeller (`label_binary.py`, key `z` zooms) and the unchanged v5:
+
+| Measure | Result |
+|---|---|
+| Locations | 88 (437 photos) |
+| Agreement (decided) | 72 of 75, 96% (95% CI 89 to 99%) |
+| Cohen's kappa | 0.80 |
+| Balanced accuracy | 98% (always yes 50%) |
+| Lines visible, confirmed | 65 of 68 |
+| No lines | 7 found, 6 sent to review, none called lines visible |
+| Sent to review | 13 of 88 |
+
+OpenStreetMap was skipped in this run (`run_agent_cached_osm.py`) because the public servers were unreliable; the verdict does not use it. Results: `eval_final4_segments_agent.txt`, `eval_final3_pass2.txt`.
+
