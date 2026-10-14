@@ -165,3 +165,8 @@ Goal: fewer false "lines visible" on roads without lines.
   no lines 11/12. Only remaining error: L0043. Both passes reported; pass 1 stays the blind result.
 - Decision: no agent change (one real error does not justify one). v5 stays frozen.
 - Next: a new clean test on 4 suburbs, labelled carefully full screen, before results are viewed.
+
+## Step 7c clean test plan (14 Oct 2026, written before fetching)
+- Suburbs chosen before fetching, never used before: jordan_springs, gregory_hills, box_hill, leppington.
+- Frozen v5 (no change since the final3 run). Labelled once, full screen, shuffled, before any result
+  is viewed. No error analysis before labelling. Evaluated once.
