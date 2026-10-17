@@ -170,3 +170,10 @@ Goal: fewer false "lines visible" on roads without lines.
 - Suburbs chosen before fetching, never used before: jordan_springs, gregory_hills, box_hill, leppington.
 - Frozen v5 (no change since the final3 run). Labelled once, full screen, shuffled, before any result
   is viewed. No error analysis before labelling. Evaluated once.
+
+## Dashboard update (17 Oct 2026)
+- Browser test pass on the dashboard (27 cases): added street and suburb search, "Analyse live" on
+  each photo, plain labels, clearer upload and server errors.
+- Map now includes the missing markings test and clean test 2 (320 locations, 23 suburbs).
+- 129 of 132 locations without an OSM road name got one from OSM Nominatim (fill_road_names.py),
+  for display only (road_name_source = "osm lookup for display"). Verdicts and evaluations unchanged.
