@@ -29,20 +29,26 @@
   .trace li { margin:4px 0; }
   .legend { display:grid; grid-template-columns: 1fr auto; gap:4px 8px; font-size:.9rem; }
   .sw { display:inline-block; width:12px; height:12px; border-radius:3px; margin-right:6px; vertical-align:-1px; }
-  .prio { list-style:none; margin:0; padding:0; font-size:.9rem; }
-  .prio li { padding:6px 0; border-bottom:1px solid var(--line); }
-  .prio button { all:unset; cursor:pointer; color:var(--accent); }
-  .prio button:focus-visible, .btn:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+  .prio, .hits, .photos { list-style:none; margin:0; padding:0; font-size:.9rem; }
+  .prio li, .hits li { padding:6px 0; border-bottom:1px solid var(--line); }
+  .prio button, .hits button { all:unset; cursor:pointer; color:var(--accent); }
+  .photos li { padding:3px 0; }
+  .photos button { all:unset; cursor:pointer; color:var(--accent); font-weight:600; margin-left:8px; }
+  .prio button:focus-visible, .hits button:focus-visible, .photos button:focus-visible, .btn:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
   dl { display:grid; grid-template-columns: auto 1fr; gap:4px 10px; margin:0; font-size:.9rem; }
   dt { color:var(--muted); }
   dd { margin:0; }
   .badge { display:inline-block; padding:2px 8px; border-radius:999px; color:#fff; font-size:.8rem; font-weight:600; }
   label { font-size:.9rem; display:block; margin:6px 0 4px; }
-  input[type=text] { width:100%; padding:8px; border:1px solid var(--line); border-radius:8px; font-size:.95rem; }
+  input[type=text], input[type=search] { width:100%; padding:8px; border:1px solid var(--line); border-radius:8px; font-size:.95rem; }
+  .row { display:flex; gap:8px; }
+  .row input { flex:1; }
   .btn { margin-top:8px; padding:8px 12px; border:0; border-radius:8px; background:var(--accent); color:#fff; font-weight:600; cursor:pointer; }
+  .row .btn { margin-top:0; }
   .btn[disabled] { opacity:.6; cursor:wait; }
   #result { margin-top:10px; font-size:.9rem; }
   details pre { white-space:pre-wrap; font-size:.75rem; background:var(--bg); padding:8px; border-radius:8px; }
+  details.adv summary { cursor:pointer; font-size:.9rem; color:var(--muted); margin-top:10px; }
   .muted { color:var(--muted); font-size:.85rem; }
   .perf { font-size:.88rem; margin:0; padding-left:18px; }
   .perf li { margin:4px 0; }
@@ -53,7 +59,7 @@
 <body>
 <header>
   <h1>ADAS-Ready Roads</h1>
-  <p>Can a camera-based lane-keeping system see painted lane lines on Sydney's roads? An agent screens crowd-sourced street imagery with OpenCV 5, asks a vision-language model on AWS when it needs a second look, checks OpenStreetMap, and routes uncertain places to people.</p>
+  <p>Can a lane keeping camera see the painted lane lines on Sydney's roads? An agent screens crowd sourced street photos with OpenCV 5, asks a vision language model on AWS when it needs a second look, checks OpenStreetMap, and sends uncertain places to people.</p>
 </header>
 <div class="notice" role="note"><strong>Research prototype.</strong> Verdicts are screening hints to prioritise human inspection, not safety certifications. See "Validated performance" for what has and has not been demonstrated.</div>
 
@@ -74,6 +80,17 @@
         <a href="https://unft6yl7d6znbr6gvfvqbwzqmq0tidph.lambda-url.ap-southeast-2.on.aws/" target="_blank" rel="noopener">what is running on AWS</a></p>
     </section>
 
+    <section class="card" aria-labelledby="search-h">
+      <h2 id="search-h">Find a street or suburb</h2>
+      <form id="search-form" class="row" role="search">
+        <label for="search" class="muted" style="position:absolute;left:-9999px">Street or suburb</label>
+        <input id="search" type="search" list="places" placeholder="e.g. Richmond Road or Leppington" autocomplete="off">
+        <datalist id="places"></datalist>
+        <button class="btn" type="submit">Find</button>
+      </form>
+      <ul id="hits" class="hits" aria-live="polite"></ul>
+    </section>
+
     <section class="card" aria-labelledby="sum-h">
       <h2 id="sum-h">Assessed locations</h2>
       <div id="legend" class="legend"></div>
@@ -83,9 +100,9 @@
     <section class="card" aria-labelledby="perf-h">
       <h2 id="perf-h">Validated performance (blind human labels)</h2>
       <ul class="perf">
-        <li><strong>First clean test</strong> (4 never-used suburbs, 56 locations): where painted lines were visible, the system confirmed them in <strong>42 of 48</strong> decided locations (88%, 95% CI 75–94%) and routed 7 to human review.</li>
         <li><strong>Latest clean test: 96% agreement (kappa 0.80).</strong> 88 new locations, labelled blind: 72 of 75 decided locations correct, 13 sent to review, and no road without lines called "lines visible". Missing markings rest on few examples (27 of 42 found across all tests).</li>
-        <li>OpenCV-only versions scored at chance on unseen suburbs; OpenStreetMap alone was a poor guide (54%). Human self-agreement on paint <em>wear</em> was poor (kappa 0.14), so wear is not graded.</li>
+        <li><strong>First clean test</strong> (4 never used suburbs, 56 locations): where painted lines were visible, the system confirmed them in <strong>42 of 48</strong> decided locations (88%, 95% CI 75 to 94%) and sent 7 to human review.</li>
+        <li>OpenCV only versions scored at chance on unseen suburbs; OpenStreetMap alone was a poor guide (54%). Human self agreement on paint <em>wear</em> was poor (kappa 0.14), so wear is not graded.</li>
       </ul>
     </section>
 
@@ -96,18 +113,22 @@
 
     <section class="card" aria-labelledby="det-h" aria-live="polite">
       <h2 id="det-h">Location details</h2>
-      <div id="details" class="muted">Select a location on the map or in the inspection queue.</div>
+      <div id="details" class="muted">Select a location on the map, search for a street, or pick one from the inspection queue.</div>
     </section>
 
     <section class="card" aria-labelledby="try-h" id="try-card">
       <h2 id="try-h">Try it live (AWS)</h2>
-      <p class="muted">One photo: OpenCV 5 checks it is a usable road photo, then a vision-language model on Amazon Bedrock is asked whether painted lane lines are visible. The first request can take ~15 s while the server starts.</p>
-      <label for="mly">Mapillary image ID</label>
-      <input id="mly" type="text" inputmode="numeric" placeholder="e.g. 1043027243798906">
-      <button id="go-mly" class="btn">Analyse Mapillary image</button>
-      <label for="file">…or upload a forward-facing road photo</label>
-      <input id="file" type="file" accept="image/*">
+      <p class="muted">One photo: OpenCV 5 checks it is a usable road photo, then a vision language model on Amazon Bedrock is asked whether painted lane lines are visible. The first request can take about 15 s while the server starts.</p>
+      <label for="file">Upload a forward facing road photo (JPG or PNG)</label>
+      <input id="file" type="file" accept="image/jpeg,image/png,image/webp">
       <button id="go-file" class="btn">Analyse photo</button>
+      <p class="muted">Or open any location and press "Analyse live" next to one of its photos.</p>
+      <details class="adv">
+        <summary>Advanced: analyse a Mapillary photo by its ID</summary>
+        <label for="mly">Mapillary image ID</label>
+        <input id="mly" type="text" inputmode="numeric" placeholder="e.g. 1043027243798906">
+        <button id="go-mly" class="btn">Analyse Mapillary photo</button>
+      </details>
       <div id="result" aria-live="polite"></div>
     </section>
   </aside>
@@ -126,6 +147,12 @@ const COLORS = { adas_readable:"#1a9850", not_readable:"#d73027", unmarked_by_de
 const LABELS = { adas_readable:"Lane lines visible", not_readable:"No visible lines (should be marked)",
                  unmarked_by_design:"Unmarked by design", human_review:"Needs human review",
                  at_risk:"At risk" };
+const DATASETS = { "development suburbs": "Development suburbs (used for tuning)",
+                   "development (former test) suburbs": "Development suburbs (used for tuning)",
+                   "final test suburbs (re-used)": "Test suburbs (reused, disclosed)",
+                   "clean test suburbs": "First clean test (unseen suburbs)",
+                   "missing markings test suburbs": "Missing markings test (unseen suburbs)",
+                   "clean test 2 suburbs": "Latest clean test (unseen suburbs)" };
 const TRACE_ID = "C-L0015";
 const TRACE_HTML = `<div class="trace"><strong>How the agent decided here</strong> (from its log, agent_trace.jsonl)
   <ol>
@@ -137,6 +164,9 @@ const TRACE_HTML = `<div class="trace"><strong>How the agent decided here</stron
   </ol></div>`;
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const badge = (txt, color) => `<span class="badge" style="background:${color}">${esc(txt)}</span>`;
+const num = v => (v === "" || v === null || v === undefined || isNaN(Number(v))) ? null : Number(v);
+const suburb = a => String(a || "").split("_").map(w => w.toUpperCase() === "CBD" ? "CBD"
+                      : w === "rd" ? "Road" : w === "hwy" ? "Highway" : w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
 
 const map = L.map("map");
 L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -148,23 +178,34 @@ let allProps = [];
 
 function showLocation(p) {
   const frames = (p.frame_ids || "").split(";").filter(Boolean);
-  const links = frames.slice(0, 8).map(id =>
-    `<a href="https://www.mapillary.com/app/?pKey=${esc(id)}" target="_blank" rel="noopener">${esc(id)}</a>`).join(", ");
-  const rate = p.opencv_painted_rate !== undefined && p.opencv_painted_rate !== "" ? Math.round(p.opencv_painted_rate * 100) + "%" : "–";
+  const photos = frames.slice(0, 8).map((id, i) =>
+    `<li><a href="https://www.mapillary.com/app/?pKey=${esc(id)}" target="_blank" rel="noopener">Photo ${i + 1}</a>
+     <button type="button" data-photo="${esc(id)}">Analyse live</button></li>`).join("");
+  const asked = num(p.vlm_asked), yes = num(p.vlm_yes), no = num(p.vlm_no);
+  const model = asked ? `${yes ?? 0} of ${asked} photos asked showed lane lines${no ? `, ${no} did not` : ""}`
+                      : "not asked (no usable road photos)";
+  const rate = num(p.opencv_painted_rate), roadPhotos = num(p.n_road_frames);
+  const paint = rate === null ? "–" : `paint confirmed on the lanes in ${Math.round(rate * 100)}% of ${roadPhotos ?? 0} road photos`;
+  const fetched = num(p.fetch_rounds) ? `yes, ${num(p.fetch_rounds)} extra round(s)` : "no, it already had enough";
+  const drives = num(p.n_sequences);
   document.getElementById("details").innerHTML = `
     <p>${badge(LABELS[p.final_verdict] || p.final_verdict, COLORS[p.final_verdict] || "#333")}
        ${p.priority === "high" ? badge("HIGH priority", "#b2182b") : ""}</p>
     <dl>
-      <dt>Road</dt><dd>${esc(p.road_name || "unnamed")} ${p.highway ? "(" + esc(p.highway) + ")" : ""}</dd>
-      <dt>Reason</dt><dd>${esc(p.reason)}</dd>
-      <dt>VLM evidence</dt><dd>${esc(p.vlm_yes)} yes / ${esc(p.vlm_no)} no of ${esc(p.vlm_asked)} photos asked</dd>
-      <dt>OpenCV painted-lane rate</dt><dd>${rate} of ${esc(p.n_road_frames)} road photos</dd>
-      <dt>Agent fetches</dt><dd>${esc(p.fetch_rounds)} extra evidence round(s)</dd>
-      <dt>Merged</dt><dd>${esc(p.merged_segments)} segment(s), ${esc(p.n_sequences)} sequence(s)</dd>
-      <dt>Dataset</dt><dd>${esc(p.dataset)}</dd>
-      <dt>Location</dt><dd>${esc(p.segment_id)}</dd>
-      <dt>Photos</dt><dd>${links || "–"}${frames.length > 8 ? " …" : ""}</dd>
-    </dl>`;
+      <dt>Road</dt><dd>${esc(p.road_name || "unnamed road")}${p.highway ? " (" + esc(p.highway) + ")" : ""}</dd>
+      <dt>Suburb</dt><dd>${esc(suburb(p.area)) || "–"}</dd>
+      <dt>Why</dt><dd>${esc(p.reason)}</dd>
+      <dt>AI model (Bedrock)</dt><dd>${esc(model)}</dd>
+      <dt>OpenCV 5 check</dt><dd>${esc(paint)}</dd>
+      <dt>Extra photos fetched</dt><dd>${esc(fetched)}</dd>
+      ${drives ? `<dt>Drives past here</dt><dd>${drives}</dd>` : ""}
+      <dt>Test set</dt><dd>${esc(DATASETS[p.dataset] || p.dataset || "–")}</dd>
+      <dt>Location ID</dt><dd>${esc(p.segment_id)}</dd>
+    </dl>
+    <p class="muted" style="margin:10px 0 4px">Photos (open on Mapillary, or analyse one live on AWS):</p>
+    <ul class="photos">${photos || "<li>–</li>"}</ul>${frames.length > 8 ? `<p class="muted">and ${frames.length - 8} more</p>` : ""}`;
+  document.querySelectorAll("#details [data-photo]").forEach(b =>
+    b.addEventListener("click", () => runMapillary(b.dataset.photo, b)));
 }
 
 function focusLocation(id) {
@@ -180,6 +221,27 @@ function scrollToCard(id) {
   document.getElementById(id).scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
+// ---------- Search ----------
+function matches(p, q) {
+  return [p.road_name, suburb(p.area), p.roads_nearby, p.segment_id]
+    .some(v => String(v || "").toLowerCase().includes(q));
+}
+function runSearch(raw) {
+  const q = raw.trim().toLowerCase();
+  const hitsEl = document.getElementById("hits");
+  if (!q) { hitsEl.innerHTML = ""; return; }
+  const hits = allProps.filter(p => matches(p, q));
+  if (!hits.length) { hitsEl.innerHTML = `<li class="muted">No assessed locations match "${esc(raw)}". Try a suburb name such as Ryde or Leppington.</li>`; return; }
+  const group = L.featureGroup(hits.map(p => layersById[p.segment_id]).filter(Boolean));
+  map.fitBounds(group.getBounds(), { maxZoom: 17, padding: [30, 30] });
+  hitsEl.innerHTML = `<li class="muted">${hits.length} location(s) found${hits.length > 10 ? ", showing 10" : ""}</li>` +
+    hits.slice(0, 10).map(p => `<li><button data-id="${esc(p.segment_id)}">${esc(p.road_name || "unnamed road")}, ${esc(suburb(p.area))}</button>
+      <div class="muted">${esc(LABELS[p.final_verdict] || p.final_verdict)}</div></li>`).join("");
+  hitsEl.querySelectorAll("button").forEach(b => b.addEventListener("click", () => { focusLocation(b.dataset.id); scrollToCard("det-h"); }));
+  if (hits.length === 1) focusLocation(hits[0].segment_id);
+}
+document.getElementById("search-form").addEventListener("submit", e => { e.preventDefault(); runSearch(document.getElementById("search").value); });
+
 fetch("segments_agent.geojson").then(r => r.json()).then(data => {
   allProps = data.features.map(f => f.properties);
   const layer = L.geoJSON(data, {
@@ -189,8 +251,9 @@ fetch("segments_agent.geojson").then(r => r.json()).then(data => {
       fillColor: COLORS[f.properties.final_verdict] || "#333", fillOpacity: 0.85 }),
     onEachFeature: (f, l) => {
       layersById[f.properties.segment_id] = l;
-      l.bindTooltip(`${LABELS[f.properties.final_verdict] || ""}${f.properties.road_name ? " · " + f.properties.road_name : ""}`);
-      l.on("click", () => showLocation(f.properties));
+      const p = f.properties;
+      l.bindTooltip(`${LABELS[p.final_verdict] || ""} · ${p.road_name || "unnamed road"}, ${suburb(p.area)}`);
+      l.on("click", () => showLocation(p));
     }
   }).addTo(map);
   map.fitBounds(layer.getBounds(), { padding: [20, 20] });
@@ -199,17 +262,23 @@ fetch("segments_agent.geojson").then(r => r.json()).then(data => {
   data.features.forEach(f => counts[f.properties.final_verdict] = (counts[f.properties.final_verdict] || 0) + 1);
   document.getElementById("legend").innerHTML = ["adas_readable", "not_readable", "unmarked_by_design", "human_review"].map(k =>
     `<span><span class="sw" style="background:${COLORS[k]}"></span>${LABELS[k]}</span><span>${counts[k] || 0}</span>`).join("");
-  document.getElementById("count").textContent = `${data.features.length} locations across 15 Sydney suburbs.`;
+  const areas = [...new Set(allProps.map(p => p.area).filter(Boolean))];
+  document.getElementById("count").textContent = `${data.features.length} locations across ${areas.length} Sydney suburbs.`;
+
+  const names = new Set();
+  allProps.forEach(p => { if (p.road_name) names.add(p.road_name); });
+  areas.forEach(a => names.add(suburb(a)));
+  document.getElementById("places").innerHTML = [...names].sort().map(n => `<option value="${esc(n)}">`).join("");
 
   const rank = { high: 0, medium: 1, review: 2 };
   const prio = allProps.filter(p => p.priority in rank).sort((a, b) => rank[a.priority] - rank[b.priority]);
   const icon = { high: "🔴", medium: "🟠", review: "🟣" };
   document.getElementById("priority").innerHTML = prio.length ? prio.slice(0, 20).map(p =>
-    `<li><button data-id="${esc(p.segment_id)}">${icon[p.priority]} ${esc(p.road_name || p.segment_id)}</button>
+    `<li><button data-id="${esc(p.segment_id)}">${icon[p.priority]} ${esc(p.road_name || "unnamed road")}, ${esc(suburb(p.area))}</button>
      <div class="muted">${esc(p.reason)}</div></li>`).join("") : "<li class='muted'>None</li>";
-  document.querySelectorAll("#priority button").forEach(b => b.addEventListener("click", () => focusLocation(b.dataset.id)));
+  document.querySelectorAll("#priority button").forEach(b => b.addEventListener("click", () => { focusLocation(b.dataset.id); scrollToCard("det-h"); }));
 }).catch(() => {
-  document.getElementById("legend").textContent = "Could not load segments_agent.geojson";
+  document.getElementById("legend").textContent = "Could not load the map data (segments_agent.geojson).";
 });
 
 // ---------- Quick tour ----------
@@ -225,9 +294,7 @@ document.getElementById("tour-2").addEventListener("click", () => {
   scrollToCard("det-h");
 });
 document.getElementById("tour-3").addEventListener("click", () => {
-  document.getElementById("mly").value = "1043027243798906";
-  scrollToCard("try-card");
-  document.getElementById("go-mly").click();
+  runMapillary("1043027243798906", document.getElementById("go-mly"));
 });
 
 // ---------- Try it live ----------
@@ -238,19 +305,21 @@ function renderResult(j) {
   const lv = { yes: ["Lane lines visible", "#1a9850"], no: ["No visible lane lines", "#d73027"],
                unknown: ["Not assessed", "#8c8c8c"] }[j.lines_visible] || ["Not assessed", "#8c8c8c"];
   const credit = src.type === "mapillary"
-    ? `<dt>Photo</dt><dd><a href="https://www.mapillary.com/app/?pKey=${esc(src.id)}" target="_blank" rel="noopener">${esc(src.id)}</a> by ${esc(src.creator)} (${esc(src.licence)})</dd>` : "";
+    ? `<dt>Photo</dt><dd><a href="https://www.mapillary.com/app/?pKey=${esc(src.id)}" target="_blank" rel="noopener">open on Mapillary</a> by ${esc(src.creator)} (${esc(src.licence)})</dd>` : "";
+  const lanes = num(j.lanes_detected);
+  const road = num(j.drivable_frac);
   resultEl.innerHTML = `
     <p>${badge(lv[0], lv[1])}</p>
     <dl>
-      <dt>OpenCV 5 check</dt><dd>${esc(j.opencv_status)}${j.reason ? " (" + esc(j.reason) + ")" : ""} · lanes found by lane network: ${esc(j.lanes_detected)}/2</dd>
-      <dt>VLM answer</dt><dd>${esc(j.vlm_answer)} <span class="muted">(${esc(j.vlm_model)})</span></dd>
-      <dt>Road in view</dt><dd>${j.drivable_frac !== "" ? Math.round(j.drivable_frac * 100) + "%" : "–"}</dd>
+      <dt>OpenCV 5 check</dt><dd>${esc(j.opencv_status)}${j.reason ? " (" + esc(j.reason) + ")" : ""}${lanes !== null ? " · lane network found " + lanes + " of 2 lane lines" : ""}</dd>
+      <dt>AI model (Bedrock)</dt><dd>${esc(j.vlm_answer)} <span class="muted">(${esc(j.vlm_model)})</span></dd>
+      <dt>Road in view</dt><dd>${road !== null ? Math.round(road * 100) + "%" : "–"}</dd>
       ${credit}
       <dt>Timing</dt><dd>OpenCV ${esc(j.opencv_ms)} ms · total ${esc(j.latency_ms)} ms</dd>
     </dl>
     <p class="muted">A single photo is only a hint; the map's location verdicts combine several photos and map data.</p>
     <details><summary>Raw response</summary><pre>${esc(JSON.stringify(j, null, 2))}</pre></details>`;
-  if (src.lat && src.lon) {
+  if (num(src.lat) !== null && num(src.lon) !== null) {
     L.circleMarker([src.lat, src.lon], { radius: 9, color: "#000", weight: 2,
       fillColor: lv[1], fillOpacity: 1 }).addTo(map)
       .bindTooltip("Your analysed photo: " + lv[0]).openTooltip();
@@ -260,15 +329,24 @@ function renderResult(j) {
 
 async function analyse(payload, btn) {
   if (!window.ADAS_API_URL) { resultEl.textContent = "API URL not configured (config.js)."; return; }
-  btn.disabled = true;
-  resultEl.innerHTML = "<p class='muted'>Analysing on AWS… (first request may take ~15 s)</p>";
+  if (btn) btn.disabled = true;
+  resultEl.innerHTML = "<p class='muted'>Analysing on AWS… (the first request may take about 15 s)</p>";
   try {
     const r = await fetch(window.ADAS_API_URL, { method: "POST",
       headers: { "content-type": "application/json" }, body: JSON.stringify(payload) });
-    renderResult(await r.json());
+    let j = null;
+    try { j = await r.json(); } catch (_) { j = null; }
+    if (j) renderResult(j);
+    else resultEl.innerHTML = `<p>The AWS service did not answer properly (status ${r.status}). Please try again in a few seconds.</p>`;
   } catch (e) {
-    resultEl.innerHTML = `<p>Request failed: ${esc(e.message)}</p>`;
-  } finally { btn.disabled = false; }
+    resultEl.innerHTML = "<p>Could not reach the AWS service. Please check your connection and try again.</p>";
+  } finally { if (btn) btn.disabled = false; }
+}
+
+function runMapillary(id, btn) {
+  document.getElementById("mly").value = id;
+  scrollToCard("try-card");
+  analyse({ mapillary_id: String(id) }, btn);
 }
 
 function fileToBase64(file, maxW = 1600) {
@@ -282,21 +360,27 @@ function fileToBase64(file, maxW = 1600) {
       URL.revokeObjectURL(img.src);
       resolve(c.toDataURL("image/jpeg", 0.9).split(",")[1]);
     };
-    img.onerror = reject;
+    img.onerror = () => { URL.revokeObjectURL(img.src); reject(new Error("unreadable image")); };
     img.src = URL.createObjectURL(file);
   });
 }
 
 document.getElementById("go-mly").addEventListener("click", e => {
   const id = document.getElementById("mly").value.trim();
-  if (!/^\d+$/.test(id)) { resultEl.textContent = "Please enter a numeric Mapillary image ID."; return; }
+  if (!/^\d+$/.test(id)) { resultEl.textContent = "A Mapillary ID is a long number. To find a street, use the search box above instead."; return; }
   analyse({ mapillary_id: id }, e.currentTarget);
 });
 document.getElementById("go-file").addEventListener("click", async e => {
   const f = document.getElementById("file").files[0];
   if (!f) { resultEl.textContent = "Please choose a photo first."; return; }
   const btn = e.currentTarget;
-  analyse({ image_base64: await fileToBase64(f) }, btn);
+  let b64;
+  try { b64 = await fileToBase64(f); }
+  catch (_) {
+    resultEl.textContent = "This browser could not read that file as a photo. Please use a JPG or PNG (iPhone photos: export or share as JPG).";
+    return;
+  }
+  analyse({ image_base64: b64 }, btn);
 });
 </script>
 </body>

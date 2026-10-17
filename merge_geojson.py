@@ -6,7 +6,9 @@ from pathlib import Path
 RUNS = [("main_v5_", "D", "development suburbs"),
         ("dev2v5_", "T", "development (former test) suburbs"),
         ("finalv5_", "F", "final test suburbs (re-used)"),
-        ("final2_", "C", "clean test suburbs")]
+        ("final2_", "C", "clean test suburbs"),
+        ("final3_", "M", "missing markings test suburbs"),
+        ("final4_", "N", "clean test 2 suburbs")]
 features = []
 for prefix, tag, label in RUNS:
     path = Path(f"{prefix}segments_agent.geojson")

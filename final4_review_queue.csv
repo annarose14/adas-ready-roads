@@ -1,0 +1,15 @@
+segment_id,road_name,highway,final_verdict,priority,reason,frame_ids
+L0015,Terry Road,secondary,human_review,review,camera evidence split (2 yes / 4 no),625968087136896;1344161964025622;819784110746975;1806889016617214;1250534456831502;1563985671428017;1518935379234625
+L0024,,,human_review,review,camera evidence split (4 yes / 2 no),303998931316069;1135465273599082;466297537774983;326496798933668;538074467189153;912590129597056;483436526233000
+L0031,Terry Road,secondary,human_review,review,camera evidence split (3 yes / 2 no),778859938392393;1855524991749768;836487932277206;820693697089118;671014642322634
+L0033,Gregory Hills Drive,secondary,human_review,review,camera evidence split (3 yes / 2 no),4254451067939804;1149169955585556;481037579845009;2942168955996152;3912211408890221
+L0035,Terry Road,secondary,not_readable,high,no visible lane lines (2/2 photos) on a road expected to be marked,1321038852823256;1530961811679114;1184619893481132;1368774784844540
+L0044,,,human_review,review,camera evidence split (2 yes / 1 no),468281687576540;270705888121459;757197588278102
+L0050,,,human_review,review,no usable road photos even after fetching more,1404863439893798;262608332325360
+L0059,,,human_review,review,no usable road photos even after fetching more,127886649334111
+L0064,,,human_review,review,no usable road photos even after fetching more,151252933539845;207136550968952
+L0070,,,human_review,review,no usable road photos even after fetching more,183867250280146;1118313198649572
+L0075,,,human_review,review,no usable road photos even after fetching more,1925130567640933
+L0080,,,human_review,review,camera evidence split (2 yes / 1 no),274345024374257;158209839533501;188119113129015;203721711353449;1904321439732831
+L0081,,,human_review,review,no usable road photos even after fetching more,2831190523810477
+L0086,,,human_review,review,camera evidence split (4 yes / 2 no),304991661161190;225129969417283;288472292995420;286915123135227;295954615350234;296843852056097;3707157236077952

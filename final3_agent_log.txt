@@ -1,0 +1,17 @@
+Input: output_final3/results.csv   Output prefix: 'final3_'   VLM: apac.amazon.nova-lite-v1:0
+Vehicle filter: kept 496/510 frames; dropped 2 slow sequences; 2 unknown-speed sequences kept
+  OSM ...20/86
+  OSM ...40/86
+  OSM ...60/86
+  OSM ...80/86
+Merged 86 segments into 60 locations
+  ...10/60 locations (fetch budget left: 60)
+  ...20/60 locations (fetch budget left: 60)
+  ...30/60 locations (fetch budget left: 60)
+  ...40/60 locations (fetch budget left: 57)
+  ...50/60 locations (fetch budget left: 54)
+  ...60/60 locations (fetch budget left: 42)
+
+Locations: 60   Fetch calls: 18   VLM questions: 122 (avg 2.0/location)
+Final verdicts: adas_readable=45, unmarked_by_design=10, human_review=4, not_readable=1
+Wrote final3_segments_agent.csv, final3_segments_agent.geojson, final3_review_queue.csv, final3_agent_trace.jsonl, final3_agent_frames.csv
